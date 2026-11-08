@@ -1617,3 +1617,24 @@ Pending:
 - Still owed from earlier rounds: migrations `032`-`034`, and the QA purge in
   `sql/maintenance/purge_test_accounts.sql`.
 - Upload `release/TesterLoop-Mobile-1.2.6.aab` to Google Play.
+
+## Seller enablement site and Lemon Squeezy activation sheet (2026-11-08)
+
+Completed:
+- Static product site in `docs/` for GitHub Pages (`main` / `docs`):
+  product page, Terms, Privacy, Refund, one CSS file, brand assets, `.nojekyll`.
+- `docs/lemonsqueezy-activation.md`: no-website signup, store/product/variant,
+  copy-paste activation answers, banned words, identity check, the five `LS_*`
+  values, Supabase secrets, JWT-on/off deploy pair, webhook, test mode, go live,
+  troubleshooting, fallback order.
+- `docs/README.md`: publish steps and editing rules.
+- All `docs/` files ASCII-only, no BOM, balanced tags. No app source changed, so
+  no build and no version bump (`0.16.0` stays).
+
+Pending (owner):
+- Publish Pages and open the live URL.
+- Replace the placeholder `support@testerloop.dev` everywhere in `docs/`.
+- Run the Lemon Squeezy activation flow using the answer sheet.
+- Then follow the payment go-live steps already listed above (secrets, deploys,
+  webhook, `035`, test-mode check).
+- Add real desktop and Android screenshots to the site.

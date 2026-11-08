@@ -4590,3 +4590,61 @@ Date: 2026-11-08
 - Known limitation: the updater-style polling stops after ten minutes; a slower
   payment is still recorded by the webhook and appears after a manual
   `Check payment status` or the next dashboard load.
+
+### Modification 063
+
+Date: 2026-11-08
+
+#### Changes
+- Added a static product website under `docs/`, publishable from GitHub Pages
+  (`main` / `docs`) at
+  `https://chamarawickramarathne-spec.github.io/close-test/`. The owner has no
+  website, and Lemon Squeezy activation asks for a website URL or a social
+  presence, so this site also serves as the merchant-of-record presence.
+  - `docs/index.html`: product page with hero, six feature cards, five-step
+    "how a project runs", pricing ($15 one-time, taxes by the provider), honest
+    limits, seven-question FAQ and downloads link to the GitHub releases page.
+  - `docs/terms.html`, `docs/privacy.html`, `docs/refunds.html`: policy pages
+    required by a payment provider and useful to customers.
+  - `docs/site.css`: one stylesheet, design tokens matching the desktop app
+    (`#F7F4ED` background, `#0F766E` teal, `#EA580C` coral), system fonts only,
+    no external assets, responsive and reduced-motion aware.
+  - `docs/assets/`: logo 1024, icon 512 and icon 114 copied from `media/`,
+    because Pages cannot serve files outside the published folder.
+  - `docs/.nojekyll`, `docs/README.md` (publish steps, editing rules, placeholders).
+- Added `docs/lemonsqueezy-activation.md`: signup without a website, store and
+  product/variant creation, copy-paste activation answers, a banned-words table
+  (Lemon Squeezy prohibits services and off-platform fulfilment, so the fee is
+  described as software activation), identity and payout verification, the five
+  `LS_*` values, Supabase secrets, the JWT-on/JWT-off deploy pair, webhook
+  registration, test-mode end-to-end checks, go-live steps, a troubleshooting
+  table and the fallback order (Paddle, then other MoRs, then the manual path).
+- Site copy is deliberately honest: no claim of automatic Google Group creation,
+  no guaranteed Play approval, usage scoped to joined project packages, no tester
+  payout amount disclosed publicly. No invented Play Store link.
+- No application source changed, so no build was required and the version stays
+  `0.16.0`.
+
+#### Files / Components
+- `docs/index.html`, `docs/terms.html`, `docs/privacy.html`,
+  `docs/refunds.html`, `docs/site.css`, `docs/.nojekyll`, `docs/README.md`,
+  `docs/lemonsqueezy-activation.md` (new)
+- `docs/assets/testerloop-logo-1024.png`,
+  `docs/assets/testerloop-icon-512.png`, `docs/assets/testerloop-icon-114.png`
+  (copied from `media/`)
+- `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- Every file in `docs/` is ASCII-only with no BOM, so it cannot be corrupted by a
+  Windows editor. The site uses no JavaScript, cookies, analytics, CDN fonts or
+  third-party scripts.
+- The contact address `support@testerloop.dev` is a **placeholder** on every
+  page. It must be replaced with an address the owner monitors before the site is
+  submitted to Lemon Squeezy. This is recorded in `docs/README.md`.
+- The hero image is a CSS mock, not a real screenshot. Real desktop and Android
+  screenshots are still outstanding (global AGENTS.md section 10).
+- Pages publishing is owner-run; the agent cannot enable it or verify the live
+  URL. Verification here was limited to file presence, ASCII/BOM checks and
+  balanced-tag checks on all four HTML files.
+- Lemon Squeezy signup, activation, secrets, Edge deploys, webhook registration
+  and `035` remain owner-run. No secret is stored in the site or the repo.

@@ -9,6 +9,12 @@ Application version: 0.16.0 desktop (Windows x86 / x64, main app + admin app)
 
 TesterLoop & TesterLoop Admin - Google Play Closed Testing, Without the Spreadsheet
 
+Official website (publish `docs/` with GitHub Pages, branch `main`, folder
+`/docs`):
+https://chamarawickramarathne-spec.github.io/close-test/
+
+Download page: https://github.com/chamarawickramarathne-spec/close-test/releases
+
 ==========================================================
 2. SHORT DESCRIPTION
 ==========================================================

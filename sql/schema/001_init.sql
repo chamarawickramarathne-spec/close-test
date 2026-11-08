@@ -98,14 +98,14 @@ create table public.campaigns (
   required_testers smallint not null default 12 check (required_testers between 1 and 15),
   payment_state    public.payment_state not null default 'unpaid',
   payment_amount_cents integer not null default 1500
-    check (payment_amount_cents between 100 and 1000000),
+    check (payment_amount_cents between 0 and 1000000),
   tester_payout_cents integer not null default 50
     check (tester_payout_cents between 1 and 1000000),
   payment_reference text,
   paid_at          timestamptz,
   payment_confirmed_by uuid references auth.users (id) on delete set null,
   payment_paid_via text check (
-    payment_paid_via is null or payment_paid_via in ('manual', 'online')
+    payment_paid_via is null or payment_paid_via in ('manual', 'online', 'free')
   ),
   payment_provider text check (
     payment_provider is null or payment_provider in ('lemonsqueezy')

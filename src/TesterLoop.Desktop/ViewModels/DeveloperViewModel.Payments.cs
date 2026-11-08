@@ -12,29 +12,33 @@ public sealed partial class DeveloperViewModel
         State: "pending" or "awaiting_link",
     };
 
-    public string PaymentAmountLabel => _campaign is null
-        ? AppConfig.ProjectFeeLabel
-        : $"${_campaign.PaymentAmountCents / 100m:0}";
+    public string PaymentAmountLabel => _campaign?.PaymentPaidVia == "free"
+        ? "Free access"
+        : _campaign is null
+            ? AppConfig.ProjectFeeLabel
+            : $"${_campaign.PaymentAmountCents / 100m:0}";
 
     public string PaymentStateLabel => _campaign is null
         ? "No project selected"
         : _campaign.PaymentState == "paid"
-            ? _campaign.PaidAt is null ? "Paid" : $"Paid {_campaign.PaidAt:dd MMM yyyy}"
+            ? _campaign.PaymentPaidVia == "free"
+                ? "Free access activated"
+                : _campaign.PaidAt is null ? "Paid" : $"Paid {_campaign.PaidAt:dd MMM yyyy}"
             : _campaign.GroupEmail is null
                 ? $"{PaymentAmountLabel} due before group setup"
                 : $"{PaymentAmountLabel} due";
 
-    public string PaymentReferenceLabel => _campaign is null
+    public string PaymentReferenceLabel => _campaign is null || _campaign.PaymentPaidVia == "free"
         ? string.Empty
         : $"Reference TL-{_campaign.Id.ToString("N")[..8].ToUpperInvariant()}";
 
     public string PaymentInstruction => _campaign?.PaymentState == "paid"
         ? _campaign?.GroupEmail is null
-            ? "Payment recorded. Operations is creating the Google Group. You can save the Play link once it is attached."
-            : "The project fee is recorded. You can save the Play link once the group is attached in Play Console."
+            ? "Access is active. Operations is creating the Google Group. You can save the Play link once it is attached."
+            : "Access is active. You can save the Play link once the group is attached in Play Console."
         : _campaign?.GroupEmail is null
-            ? $"Pay {PaymentAmountLabel} online below, or quote the reference above so operations can record it. Operations then creates and attaches the Google Group."
-            : $"Pay {PaymentAmountLabel} online below, or quote the reference above. Operations confirms it, then you can save the Play link.";
+            ? "Use Free Access to activate this project without payment for now. Operations then creates and attaches the Google Group."
+            : "Use Free Access to activate this project without payment for now, then you can save the Play link.";
 
     public string PaymentTone => _campaign?.PaymentState == "paid" ? "good" : "warn";
 }

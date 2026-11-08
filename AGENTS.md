@@ -4772,3 +4772,109 @@ Date: 2026-11-08
   tag, so they are reachable from there.
 - Verified: `docs/index.html` has no `Operations app` text, tags balance, and the
   file is ASCII-only with no BOM.
+
+### Modification 068
+
+Date: 2026-11-08
+
+#### Changes
+- Replaced the developer card checkout with a single **Free Access** action.
+  Pressing it activates the project with the fee waived for now; the normal
+  package fee stays on record for when payment is re-enabled.
+  - New `claim_free_access(p_campaign_id)` RPC: developer-only, requires a
+    `pending` / `awaiting_link` project that is not already paid, marks
+    `payment_state = 'paid'`, sets `payment_amount_cents = 0`,
+    `payment_paid_via = 'free'`, stamps `paid_at`, reserves the group identity,
+    expires any open `payment_intents`, and writes `payment.free_access` to the
+    audit log.
+  - Relaxed `campaigns_payment_amount_check` to `between 0 and 1000000` and
+    `campaigns_payment_paid_via_check` to `('manual','online','free')`.
+  - Removed the Lemon Squeezy checkout from the desktop developer flow: the
+    `Pay $15.00 online` and `Check payment status` buttons are gone, along with
+    the checkout polling. `SupabaseService.ClaimFreeAccessAsync` replaces
+    `StartOnlinePaymentAsync` on the desktop side.
+  - Developer project page: the payment card is now a single button
+    (`FreeAccessButtonLabel` = `Free Access`) with `PROJECT ACCESS` as its
+    eyebrow. Copy explains that activation starts group setup without payment
+    for now.
+  - Project detail, package summary and submit toast now say activation/free
+    access rather than "pay the fee".
+  - `PaymentAmountLabel` renders `Free access`, state reads
+    `Free access activated`, the reference is hidden for a free activation and
+    the admin project page labels the method `Free access`.
+  - TesterLoop Admin is unchanged: operations can still confirm a manual
+    payment, and the payment packages page keeps the normal fees and tester
+    payouts.
+- Added `sql/migrations/036_free_access.sql` for the live project: constraint
+  updates, the new RPC, revokes, authenticated-only grant and a PostgREST schema
+  reload.
+- Mirrored the constraints, RPC and grant into the greenfield schema, functions
+  and bootstrap.
+- Refreshed `medial_support.txt` for `0.17.0` and reworded every developer
+  payment claim to the free-access state.
+- Updated the public site for this release: the pricing block now shows `$0` with
+  free access during launch and the standard `$15` fee for when payment returns,
+  and the `#download` buttons plus the footer Downloads link now point at
+  `desktop-v0.17.0`.
+- Version bumped to `0.17.0` in `AppConfig`, both projects and both installers.
+  Android stays at `1.2.6`.
+
+#### Files / Components
+- `sql/migrations/036_free_access.sql` (new)
+- `sql/schema/001_init.sql`, `sql/functions/005_mutations.sql`,
+  `sql/seed/007_admin_bootstrap.sql`
+- `src/TesterLoop.Shared/Core/Data/SupabaseService.cs`
+- `src/TesterLoop.Desktop/ViewModels/DeveloperViewModel.cs`,
+  `DeveloperViewModel.Checkout.cs`, `DeveloperViewModel.Payments.cs`,
+  `DeveloperViewModel.Detail.cs`, `DeveloperViewModel.Projects.cs`
+- `src/TesterLoop.Desktop/Views/DeveloperProjectDetailView.xaml`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `docs/index.html`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Free access is a deliberate temporary product decision. `save_play_link` still
+  requires a paid campaign, so `claim_free_access` writes the same paid state a
+  manual confirmation would; only the amount and method differ.
+- The Lemon Squeezy Edge Functions and the `payment_intents` model remain in the
+  codebase. Nothing calls the checkout from the desktop app any more, so the
+  `LS_*` owner setup is no longer needed for a developer to start a project.
+- `payment_amount_cents = 0` means historical revenue reports will show a zero
+  fee for projects activated during this period. A paid project keeps its real
+  amount and is never overwritten by free access.
+- Deployment: run `036` after `035` in the Supabase SQL editor as `postgres`.
+  Until it runs, the Free Access button returns a 404 and the project stays
+  unactivated.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  Published and packaged `0.17.0` for both apps and both architectures:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.17.0.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.17.0.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.17.0.0`,
+    PE `0x14C`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.17.0.0`,
+    PE `0x8664`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,175,994 bytes, product `0.17.0`
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,066,205 bytes, product `0.17.0`
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,114,462 bytes,
+    product `0.17.0`
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,989,064 bytes,
+    product `0.17.0`
+  All four published executables start, keep responsive windows and were stopped
+  after the check.
+- Not verified live: the Free Access round-trip, because `036` has not been
+  applied and no live developer account was used this round. The XAML was
+  compiled but not driven through UI Automation.
+- A leftover `TesterLoop` process (pid 12848, owned by another Windows session)
+  could not be terminated. The four `build` executables were verified writable and
+  publishing succeeded, so it did not affect the build.
+- Security: no secrets or endpoints were added. `claim_free_access` is
+  `security definer`, calls `require_developer()`, scopes the row to that
+  developer's own campaign, is revoked from `public` / `anon` and granted only to
+  `authenticated`. The reserved group identity is used for the reservation and
+  recorded in the audit row, but it is not returned to the developer client. The
+  amount and identity are server-controlled, so a tampered client cannot price or
+  reserve a project itself.
+

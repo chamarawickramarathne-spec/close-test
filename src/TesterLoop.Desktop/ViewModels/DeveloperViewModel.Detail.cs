@@ -59,8 +59,8 @@ public sealed partial class DeveloperViewModel
 
     public string Headline => _campaign?.State switch
     {
-        "pending" => IsPaymentDue ? "Payment required" : "Group setup in progress",
-        "awaiting_link" => IsPaymentDue ? "Payment required" : "One step from live",
+        "pending" => IsPaymentDue ? "Activation required" : "Group setup in progress",
+        "awaiting_link" => IsPaymentDue ? "Activation required" : "One step from live",
         "live" => "Open to testers",
         "at_risk" => "Clock at risk",
         "passed" => "Play requirement met",
@@ -70,8 +70,8 @@ public sealed partial class DeveloperViewModel
 
     public string NextStepTitle => _campaign?.State switch
     {
-        "pending" => IsPaymentDue ? "Pay the project fee" : "Group setup in progress",
-        "awaiting_link" => IsPaymentDue ? "Pay the project fee" : "Attach the group in Play Console",
+        "pending" => IsPaymentDue ? "Activate free access" : "Group setup in progress",
+        "awaiting_link" => IsPaymentDue ? "Activate free access" : "Attach the group in Play Console",
         "live" => "Testers can join now",
         "at_risk" => "Keep 12 testers opted in",
         "passed" => "Nothing to do",
@@ -84,10 +84,10 @@ public sealed partial class DeveloperViewModel
         : _campaign.State switch
         {
             "pending" => IsPaymentDue
-                ? $"Pay the {PaymentAmountLabel} project fee with the online button on the fee card, or quote {PaymentReferenceLabel}. Operations records it, creates the matching Google Group and attaches it here. You can then add the group to Play Console and save the testing link."
-                : $"Your payment is recorded. Operations is creating the Google Group for {_campaign.AppName} with the reserved group number and will attach it here. You do not need to do anything yet.",
+                ? "Activate free access on the fee card to start this project without payment for now. Operations records the activation, creates the matching Google Group and attaches it here. You can then add the group to Play Console and save the testing link."
+                : $"Your project is active. Operations is creating the Google Group for {_campaign.AppName} with the reserved group number and will attach it here. You do not need to do anything yet.",
             "awaiting_link" => IsPaymentDue
-                ? $"Your group is attached. Pay the {PaymentAmountLabel} project fee with the online button on the fee card, or quote {PaymentReferenceLabel}. Once the payment lands you can paste the group address into Play Console and save the testing link."
+                ? "Your group is attached. Activate free access on the fee card to start this project without payment for now. Once active you can paste the group address into Play Console and save the testing link."
                 : $"In Play Console, open the closed test for {_campaign.PackageName} and paste the group address into the tester list. Then save the testing link below.",
             "live" =>
                 "Testers can join from their bench and open the Play link to install. Keep 12 of them opted in for 14 continuous days.",
@@ -109,8 +109,8 @@ public sealed partial class DeveloperViewModel
             if (string.IsNullOrWhiteSpace(_campaign?.GroupEmail))
             {
                 return _campaign?.PaymentState == "paid"
-                    ? "Payment recorded. Operations is creating the group."
-                    : "Pay the project fee online to start group setup";
+                    ? "Access active. Operations is creating the group."
+                    : "Use Free Access to start group setup";
             }
 
             var label = "Manual group · no API sync";
@@ -275,7 +275,7 @@ public sealed partial class DeveloperViewModel
     {
         if (campaign.State == "awaiting_link" && campaign.PaymentState != "paid")
         {
-            return "Payment due";
+            return "Activation due";
         }
 
         return StateLabel(campaign.State);

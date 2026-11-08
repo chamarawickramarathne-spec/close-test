@@ -1647,3 +1647,32 @@ Pending (owner):
 - Then follow the payment go-live steps already listed above (secrets, deploys,
   webhook, `035`, test-mode check).
 - Add real desktop and Android screenshots to the site.
+
+## Free access activation instead of card checkout (2026-11-08)
+
+Completed:
+- `claim_free_access` RPC and `sql/migrations/036_free_access.sql`: activates a
+  project with the fee waived, reserves the group identity and audits
+  `payment.free_access`.
+- Amount and paid-via constraints widened to allow a zero-fee `free` activation.
+- Developer project page now shows one `Free Access` button; the hosted checkout,
+  checkout polling and `Check payment status` were removed from the desktop flow.
+- Project detail, package summary, submit toast and payment labels reworded to
+  activation/free access.
+- Admin UI is unchanged: manual confirmation and payment packages still work.
+- `medial_support.txt` refreshed for desktop `0.17.0`.
+- Built, published and packaged `0.17.0` for both Windows apps and both
+  architectures. All four executables start and stop cleanly; all four installers
+  report product version `0.17.0`.
+
+Pending:
+- Owner: run `sql/migrations/036_free_access.sql` in the Supabase SQL editor as
+  `postgres`; the Free Access button returns a 404 until it does.
+- Live verification of the Free Access round-trip with a real developer account.
+- Commit the `0.17.0` changes and publish the desktop release.
+- Still owed: migrations `032`-`034` (and any earlier unapplied ones), plus the QA
+  purge in `sql/maintenance/purge_test_accounts.sql`.
+- The Lemon Squeezy checkout code stays in the repository but is no longer
+  reachable from the desktop app, so the `LS_*` go-live steps are optional while
+  free access is in effect.
+

@@ -1,6 +1,6 @@
 TESTERLOOP - MEDIA & MARKETING SUPPORT
 Last updated: 2026-11-08
-Application version: 0.16.0 desktop (Windows x86 / x64, main app + admin app)
+Application version: 0.17.0 desktop (Windows x86 / x64, main app + admin app)
                    1.2.6 Android tester app (signed APK + AAB)
 
 ==========================================================
@@ -21,8 +21,9 @@ Download page: https://github.com/chamarawickramarathne-spec/close-test/releases
 
 TesterLoop runs a Google Play closed test from two focused Windows apps with real
 accounts: choose Developer or Tester when you sign in. Developers pick an
-operations-defined payment package when creating a project, then pay the fee by
-card through a hosted checkout or ask operations to record it. Operations reserve
+operations-defined package when creating a project, then activate the project
+with one Free Access action; the normal fee is waived for now, and operations can
+still record a manual payment. Operations reserve
 the exact Google Group identity, open Google's group creation page,
 create the group by hand and attach it in TesterLoop Admin. TesterLoop Mobile
 verifies each tester's opt-in against that group, while the main app tracks the
@@ -54,9 +55,10 @@ How a run works
 - The developer creates a project in the app and chooses one active payment
   package. The package sets the project fee and the tester payout. The project
   waits as Pending.
-- The developer pays the project fee by card from the project page, or quotes the
-  reference shown in the app so operations can record an offline payment.
-- Confirming the fee reserves that project's exact Google Group identity: a
+- The developer activates the project with Free Access on the project page.
+  Payment is waived for now; the package keeps its normal project fee for when
+  payment is re-enabled. Operations can still record a manual payment.
+- Activation reserves that project's exact Google Group identity: a
   per-developer sequence number, an `@googlegroups.com` address and the display
   name operations must use. It also selects that project in the group-setup queue
   and points operations to the Open group create page button.
@@ -106,15 +108,15 @@ Main features
   account sees only its own side.
 - Remembers your last sign-in. The email address you used last is filled in next
   time; the password and session are never stored on disk.
-- Developer workspace. Create a project, choose a package, pay the project fee, see
-  that operations is creating the group, then copy the attached group address, add
-  the Play link, and watch the eligibility clock.
-- Clear project payments. Each project shows its fee, a `TL-XXXXXXXX` reference
-  and its payment state. A Pay online button opens a hosted card checkout, and the
-  project page updates when the payment lands; operations can still record an
-  offline payment. The payment reserves the exact group number, address and display
-  name, and the Play link stays locked until the fee is recorded and the group is
-  attached.
+- Developer workspace. Create a project, choose a package, activate it with Free
+  Access, see that operations is creating the group, then copy the attached group
+  address, add the Play link, and watch the eligibility clock.
+- Clear project access. Each project shows the normal package fee, a
+  `TL-XXXXXXXX` reference and its activation state. A Free Access button activates
+  the project with the fee waived for now; operations can still record a manual
+  payment. Activation reserves the exact group number, address and display
+  name, and the Play link stays locked until the project is active and the group
+  is attached.
 - A real eligibility clock. Opted-in testers, continuous days banked and seats used
   are shown on one screen, with the exact day you can apply for production.
 - Fifteen-tester limit, enforced. A project may use at most 15 testers in total,
@@ -335,11 +337,12 @@ tester quietly leaving on day 11 sends you back to zero.
 TesterLoop takes that entire job off your hands.
 
 - Create your developer account in the Windows app, then create the project and
-  choose a payment package. The default Standard package is $15 with a $0.50 tester
-  payout, and operations can define other packages for different project tiers.
-- Pay the project fee by card from the project page, or quote the reference shown
-  in the app. The payment reserves your exact group number, address and display
-  name before anything is created.
+  choose a package. The default Standard package is normally $15 with a $0.50
+  tester payout, and operations can define other packages for different project
+  tiers. Payment is currently waived, so the project starts with Free Access.
+- Press Free Access on the project page. The normal fee is waived for now, and the
+  activation reserves your exact group number, address and display name before
+  anything is created.
 - Our operations team opens Google's group creation page in one click, creates the
   group by hand with the reserved address and display name, confirms its settings
   and then attaches the reserved identity - no API tricks, no broken automation,
@@ -436,7 +439,7 @@ Download TesterLoop and start your next closed test today.
    developer panel showing a "New project" form with a payment package selector
    opened to reveal "Standard - $15.00 project fee - $0.50 tester payout", beside
    fifteen seat tiles with twelve filled green and three outlined. A compact project
-   card reads "Payment confirmed" with a TL reference. Soft indigo accent lighting,
+   card reads "Free access active" with a TL reference. Soft indigo accent lighting,
    realistic UI screenshot style, accurate short labels, 16:9.
 
 2. Close-up of an indigo rounded-square app icon with a white loop and check mark,
@@ -478,7 +481,7 @@ NOTES FOR THE DESIGNER
   warning #B45309, danger #DC2626.
 - Typography: Segoe UI Variable for interface, Cascadia Mono for addresses.
 - Accounts and data: Supabase-backed email/password sign-in; no Google or social
-  sign-in is offered in 0.16.0 desktop or 1.2.6 Android. One account can choose
+  sign-in is offered in 0.17.0 desktop or 1.2.6 Android. One account can choose
   Developer or Tester at sign-in, and the missing profile is created server-side on
   first use. TesterLoop Admin is a separate install with its own stable x86/x64
   installers, a left-hand menu, per-tester, per-developer and per-project detail
@@ -495,12 +498,12 @@ NOTES FOR THE DESIGNER
   1dp border and no elevation, 52dp primary buttons, Plus Jakarta Sans type.
   Promotional phone mockups should match that calm, paper-warm look rather than the
   indigo Windows shell.
-- Pricing: the default Standard package is $15.00 with a $0.50 tester payout.
-  Operations may create other packages with their own amounts. A project keeps the
-  package amounts chosen when it was created. The card checkout is hosted by the
-  payment provider, not drawn inside the app. Do not depict automatic tester
-  payouts; show the reference, the status and the manual staff payout record
-  instead.
+- Pricing: the default Standard package is normally $15.00 with a $0.50 tester
+  payout. Operations may create other packages with their own amounts. A project
+  keeps the package amounts chosen when it was created. Payment is currently
+  waived: the developer presses Free Access and the normal fee is not charged. Do
+  not depict automatic tester payouts; show the reference, the status and the
+  manual staff payout record instead.
 - Opt-in verification: one tester at a time is checked against that project's
   Google Group, through the app's server side. A confirmed seat may be shown as
   "verified member" or "opt-in confirmed". Do not depict a full group roster being

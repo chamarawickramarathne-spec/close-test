@@ -55,7 +55,7 @@
                                 <StackPanel>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="PROJECT FEE" Style="{StaticResource Eyebrow}" />
+                                            <TextBlock Text="PROJECT ACCESS" Style="{StaticResource Eyebrow}" />
                                             <TextBlock Text="{Binding PaymentAmountLabel}" FontSize="21"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource InkBrush}"
@@ -94,14 +94,10 @@
                                     <TextBlock Text="{Binding PaymentInstruction}" Style="{StaticResource Body}"
                                                FontSize="11.5" Margin="0,4,0,0" />
                                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0"
-                                                Visibility="{Binding CanPayOnline, Converter={StaticResource BoolToVisibility}}">
-                                        <Button Content="{Binding PayButtonLabel}"
+                                                Visibility="{Binding CanClaimFreeAccess, Converter={StaticResource BoolToVisibility}}">
+                                        <Button Content="{Binding FreeAccessButtonLabel}"
                                                 Style="{StaticResource PrimaryButton}"
-                                                Command="{Binding PayOnlineCommand}" />
-                                        <Button Content="Check payment status"
-                                                Style="{StaticResource GhostButton}"
-                                                Command="{Binding CheckPaymentCommand}"
-                                                Margin="8,0,0,0" />
+                                                Command="{Binding FreeAccessCommand}" />
                                     </StackPanel>
                                     <TextBlock Text="{Binding PayNote}" Style="{StaticResource Body}"
                                                FontSize="11" Foreground="{StaticResource MutedBrush}"
@@ -403,7 +399,7 @@
                         </Border.Style>
                         <StackPanel>
                             <TextBlock Text="Start with a project" Style="{StaticResource H2}" />
-                            <TextBlock Text="Create a project, pay the project fee, and operations will create and attach the matching Google Group. Then add it to Play Console and save the closed-test link here."
+                            <TextBlock Text="Create a project, activate free access, and operations will create and attach the matching Google Group. Then add it to Play Console and save the closed-test link here."
                                        Style="{StaticResource Body}" Margin="0,6,0,0" />
                         </StackPanel>
                     </Border>

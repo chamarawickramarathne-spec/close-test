@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>TesterLoopAdmin</AssemblyName>
     <RootNamespace>TesterLoop.Admin</RootNamespace>
-    <Version>0.16.0</Version>
+    <Version>0.17.0</Version>
     <Company>TesterLoop</Company>
     <Product>TesterLoop Admin</Product>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>

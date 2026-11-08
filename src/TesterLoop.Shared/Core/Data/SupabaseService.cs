@@ -221,6 +221,10 @@ public sealed partial class SupabaseService
             ("p_campaign_id", campaignId),
             ("p_reference", NullIfEmpty(reference))));
 
+    public Task<JsonElement> ClaimFreeAccessAsync(Guid campaignId)
+        => RpcAsync<JsonElement>("claim_free_access", Arguments(
+            ("p_campaign_id", campaignId)));
+
     public Task<JsonElement> SavePlayLinkAsync(Guid campaignId, string url)
         => RpcAsync<JsonElement>("save_play_link", Arguments(
             ("p_campaign_id", campaignId),

@@ -44,8 +44,7 @@ public sealed partial class DeveloperViewModel : ObservableObject
         SaveLinkCommand = new AsyncRelayCommand(SaveLinkAsync);
         DeleteProjectCommand = new AsyncRelayCommand(DeleteProjectAsync);
         DeleteCompletedCommand = new AsyncRelayCommand<CampaignOption>(DeleteCompletedAsync);
-        PayOnlineCommand = new AsyncRelayCommand(PayOnlineAsync);
-        CheckPaymentCommand = new AsyncRelayCommand(CheckPaymentAsync);
+        FreeAccessCommand = new AsyncRelayCommand(ClaimFreeAccessAsync);
 
         CopyGroupCommand = new RelayCommand(CopyGroup);
         CopyOptInCommand = new RelayCommand(CopyOptIn);
@@ -122,7 +121,7 @@ public sealed partial class DeveloperViewModel : ObservableObject
 
     public string SelectedPackageDetail => SelectedPackage is null
         ? "Choose a package to see its project fee."
-        : $"Project fee {Money(SelectedPackage.AmountCents)}";
+        : $"Normally {Money(SelectedPackage.AmountCents)} - free access for now";
 
     private static string Money(int cents)
         => "$" + (cents / 100m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
@@ -266,7 +265,7 @@ public sealed partial class DeveloperViewModel : ObservableObject
 
         if (_campaign.PaymentState != "paid")
         {
-            Error = $"The {AppConfig.ProjectFeeLabel} project fee must be paid before you can save the link.";
+            Error = "Activate free access on the project page before you can save the link.";
             return;
         }
 

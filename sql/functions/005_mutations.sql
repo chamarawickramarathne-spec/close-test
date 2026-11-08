@@ -665,6 +665,79 @@ begin
 end;
 $$;
 
+-- Temporary free-access activation. A developer can start a project without the
+-- $15 fee while payment is disabled. The project is marked paid with amount zero,
+-- reserves the group identity and can continue to group attachment and the Play
+-- link. The change is audited so a later manual review can find free projects.
+create or replace function public.claim_free_access(p_campaign_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_developer   uuid := public.require_developer();
+  v_campaign    public.campaigns%rowtype;
+  v_paid_at     timestamptz;
+  v_reservation jsonb := '{}'::jsonb;
+begin
+  select * into v_campaign
+  from public.campaigns
+  where id = p_campaign_id
+  for update;
+
+  if not found or v_campaign.developer_id <> v_developer then
+    raise exception 'That project could not be found.';
+  end if;
+  if v_campaign.state not in ('pending', 'awaiting_link') then
+    raise exception 'This project is not waiting for activation.';
+  end if;
+  if v_campaign.payment_state = 'paid' then
+    raise exception 'This project is already active.';
+  end if;
+
+  update public.campaigns
+  set payment_state = 'paid',
+      paid_at = now(),
+      payment_amount_cents = 0,
+      payment_reference = null,
+      payment_confirmed_by = null,
+      payment_paid_via = 'free',
+      payment_provider = null,
+      payment_provider_ref = null
+  where id = p_campaign_id
+  returning paid_at into v_paid_at;
+
+  update public.payment_intents
+  set status = 'expired',
+      updated_at = now()
+  where campaign_id = p_campaign_id
+    and status = 'created';
+
+  if v_campaign.group_id is null then
+    v_reservation := public.reserve_group_identity(p_campaign_id, false);
+  end if;
+
+  perform public.write_audit(
+    'payment.free_access',
+    v_campaign.app_name,
+    jsonb_build_object(
+      'campaign_id', p_campaign_id,
+      'original_amount_cents', v_campaign.payment_amount_cents,
+      'reservation', v_reservation
+    )
+  );
+
+  return jsonb_build_object(
+    'campaign_id', p_campaign_id,
+    'payment_state', 'paid',
+    'payment_amount_cents', 0,
+    'payment_paid_via', 'free',
+    'paid_at', v_paid_at
+  );
+end;
+$$;
+
 -- Online payment intents. The developer opens a hosted Lemon Squeezy checkout;
 -- only the webhook (service_role) may mark the fee paid. The amount always comes
 -- from the campaign, never from the client.

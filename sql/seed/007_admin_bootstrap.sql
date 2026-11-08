@@ -79,6 +79,7 @@ grant execute on function public.delete_campaign(uuid) to authenticated;
 grant execute on function public.attach_group(uuid, text, text, text, boolean) to authenticated;
 grant execute on function public.rotate_group_identity(uuid) to authenticated;
 grant execute on function public.confirm_payment(uuid, text) to authenticated;
+grant execute on function public.claim_free_access(uuid) to authenticated;
 grant execute on function public.prepare_payment_intent(uuid) to authenticated;
 grant execute on function public.save_play_link(uuid, text) to authenticated;
 grant execute on function public.set_report_status(uuid, text) to authenticated;

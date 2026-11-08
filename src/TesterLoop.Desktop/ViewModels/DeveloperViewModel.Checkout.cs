@@ -6,15 +6,15 @@ namespace TesterLoop.Desktop.ViewModels;
 
 public sealed partial class DeveloperViewModel
 {
-    private CancellationTokenSource? _paymentWatch;
     private string _payNote = string.Empty;
 
-    public bool CanPayOnline => IsPaymentDue;
+    public bool CanClaimFreeAccess => IsPaymentDue;
 
     public bool ShowsPaymentMethod => _campaign?.PaymentState == "paid";
 
     public string PaymentMethodLabel => _campaign?.PaymentPaidVia switch
     {
+        "free" => "Free access",
         "online" => "Paid online",
         "manual" => "Recorded by operations",
         _ => _campaign?.PaymentState == "paid" ? "Paid" : string.Empty,
@@ -26,7 +26,7 @@ public sealed partial class DeveloperViewModel
 
     public bool HasProviderReference => ProviderReferenceLabel.Length > 0;
 
-    public string PayButtonLabel => $"Pay {PaymentAmountLabel} online";
+    public string FreeAccessButtonLabel => "Free Access";
 
     public string PayNote
     {
@@ -42,17 +42,14 @@ public sealed partial class DeveloperViewModel
 
     public bool HasPayNote => PayNote.Length > 0;
 
-    public AsyncRelayCommand PayOnlineCommand { get; }
-
-    public AsyncRelayCommand CheckPaymentCommand { get; }
+    public AsyncRelayCommand FreeAccessCommand { get; }
 
     private void ResetCheckoutState()
     {
-        StopPaymentWatch();
         PayNote = string.Empty;
     }
 
-    private async Task PayOnlineAsync()
+    private async Task ClaimFreeAccessAsync()
     {
         Error = string.Empty;
         Toast = string.Empty;
@@ -66,122 +63,19 @@ public sealed partial class DeveloperViewModel
 
         if (!IsPaymentDue)
         {
-            Error = "This project fee does not need an online payment.";
+            Error = "This project does not need activation.";
             return;
         }
 
         try
         {
-            var checkout = await _service.StartOnlinePaymentAsync(_campaign.Id);
-
-            if (!LinkLauncher.TryOpenCheckout(checkout.CheckoutUrl))
-            {
-                Error = "The checkout link could not be opened. Ask operations to record the fee instead.";
-                return;
-            }
-
-            PayNote = $"Checkout opened in your browser. This page updates when the payment lands. "
-                      + $"Quote {PaymentReferenceLabel} if you pay another way.";
-            StartPaymentWatch(_campaign.Id);
+            await _service.ClaimFreeAccessAsync(_campaign.Id);
+            await LoadAsync();
+            Toast = "Free access activated. Operations is creating the Google Group.";
         }
         catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
         {
             Error = ex.Message;
-        }
-    }
-
-    private async Task CheckPaymentAsync()
-    {
-        Error = string.Empty;
-
-        if (_campaign is null)
-        {
-            return;
-        }
-
-        var campaignId = _campaign.Id;
-        await LoadAsync();
-
-        var current = _allCampaigns.FirstOrDefault(c => c.Id == campaignId);
-        if (current is null)
-        {
-            return;
-        }
-
-        if (current.PaymentState == "paid")
-        {
-            StopPaymentWatch();
-            PayNote = string.Empty;
-            Toast = "Payment received. Operations is creating the Google Group.";
-        }
-        else
-        {
-            PayNote = "No payment has arrived yet. If you just paid, give it a minute and check again.";
-        }
-    }
-
-    private void StartPaymentWatch(Guid campaignId)
-    {
-        StopPaymentWatch();
-
-        var watch = new CancellationTokenSource();
-        _paymentWatch = watch;
-        _ = WatchPaymentAsync(campaignId, watch.Token);
-    }
-
-    private void StopPaymentWatch()
-    {
-        var watch = _paymentWatch;
-        _paymentWatch = null;
-        if (watch is null)
-        {
-            return;
-        }
-
-        try
-        {
-            watch.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-
-        watch.Dispose();
-    }
-
-    private async Task WatchPaymentAsync(Guid campaignId, CancellationToken token)
-    {
-        try
-        {
-            for (var attempt = 0; attempt < 120; attempt++)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(5), token);
-
-                var dashboard = await _service.GetDeveloperDashboardAsync();
-                var campaign = dashboard.Campaigns.FirstOrDefault(c => c.Id == campaignId);
-                if (campaign is null)
-                {
-                    return;
-                }
-
-                if (campaign.PaymentState == "paid")
-                {
-                    await LoadAsync();
-                    Toast = "Payment received. Operations is creating the Google Group.";
-                    return;
-                }
-            }
-
-            if (!token.IsCancellationRequested)
-            {
-                PayNote = "Still waiting for the payment. Press Check payment status after the checkout finishes.";
-            }
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
-        {
         }
     }
 }

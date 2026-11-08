@@ -73,7 +73,7 @@ public sealed partial class DeveloperViewModel
             NewPackage = string.Empty;
             _campaign = null;
             await LoadAsync();
-            Toast = $"Project submitted with the {selected.Name} package. Pay the {feeLabel} project fee online, or quote the reference on the project page. Operations creates the Google Group and attaches it here.";
+            Toast = $"Project submitted with the {selected.Name} package (normally {feeLabel}). Use Free Access on the project page to start it without payment for now. Operations creates the Google Group and attaches it here.";
         }
         catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
         {

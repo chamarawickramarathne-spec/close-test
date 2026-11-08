@@ -25,9 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.testerloop.app.core.installedBuildLabel
 import com.testerloop.app.ui.AppVm
 import com.testerloop.app.ui.UiState
 import com.testerloop.app.ui.checkInstall
@@ -53,6 +55,9 @@ fun CampaignScreen(ui: UiState, campaignId: String, onBack: () -> Unit, vm: AppV
     val mine = ui.mine.firstOrNull { it.campaignId == campaignId }
     val available = ui.available.firstOrNull { it.campaignId == campaignId }
     val appName = mine?.appName ?: available?.appName ?: "Project"
+    val context = LocalContext.current
+    val packageName = mine?.packageName ?: available?.packageName
+    val detectedBuild = remember(packageName) { installedBuildLabel(context, packageName) }
     var showReport by remember { mutableStateOf(false) }
     var reportMark by remember { mutableStateOf(ui.reportSuccess) }
     var confirmOptOut by remember { mutableStateOf(false) }
@@ -180,6 +185,7 @@ fun CampaignScreen(ui: UiState, campaignId: String, onBack: () -> Unit, vm: AppV
         ReportSheet(
             campaignId = campaignId,
             usage = mine?.usageStatus,
+            buildLabel = detectedBuild,
             busy = ui.reportBusy,
             error = ui.reportError,
             onDismiss = { showReport = false; vm.clearReportError() },

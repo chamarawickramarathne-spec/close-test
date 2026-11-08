@@ -47,15 +47,15 @@ import com.testerloop.app.ui.theme.Muted
 fun ReportSheet(
     campaignId: String,
     usage: UsageStatus?,
+    buildLabel: String?,
     busy: Boolean,
     error: String?,
     onDismiss: () -> Unit,
-    onSubmit: (campaignId: String, severity: String, title: String, body: String, buildLabel: String) -> Unit
+    onSubmit: (campaignId: String, severity: String, title: String, body: String) -> Unit
 ) {
     var severity by rememberSaveable { mutableStateOf("minor") }
     var title by rememberSaveable { mutableStateOf("") }
     var body by rememberSaveable { mutableStateOf("") }
-    var buildLabel by rememberSaveable { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -122,20 +122,14 @@ fun ReportSheet(
                 enabled = !busy
             )
             Spacer(Modifier.height(14.dp))
-            TlField(
-                value = buildLabel,
-                onValueChange = { buildLabel = it },
-                label = "Build (optional)",
-                placeholder = "1.4.2 (214)",
-                enabled = !busy
-            )
+            ReportBuildLabel(buildLabel)
 
             FormError(error, modifier = Modifier.padding(top = 10.dp))
 
             Spacer(Modifier.height(18.dp))
             TlButton(
                 text = "File report",
-                onClick = { onSubmit(campaignId, severity, title, body, buildLabel) },
+                onClick = { onSubmit(campaignId, severity, title, body) },
                 loading = busy
             )
             Spacer(Modifier.height(6.dp))
@@ -151,6 +145,25 @@ fun ReportSheet(
                 color = Muted
             )
         }
+    }
+}
+
+@Composable
+private fun ReportBuildLabel(buildLabel: String?) {
+    TlCard {
+        SectionHeader("Build version")
+        Spacer(Modifier.height(6.dp))
+        Text(
+            buildLabel ?: "App not installed on this device",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Ink
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Read from the installed app automatically. You do not need to enter it.",
+            style = MaterialTheme.typography.bodySmall,
+            color = Muted
+        )
     }
 }
 

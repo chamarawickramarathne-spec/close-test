@@ -21,8 +21,8 @@ android {
         applicationId = "com.testerloop.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 10202
-        versionName = "1.2.2"
+        versionCode = 10203
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

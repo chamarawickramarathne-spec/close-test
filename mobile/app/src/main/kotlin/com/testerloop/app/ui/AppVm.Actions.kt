@@ -10,6 +10,7 @@ import androidx.work.WorkManager
 import com.testerloop.app.core.AppConfig
 import com.testerloop.app.core.GroupLink
 import com.testerloop.app.core.PlayLink
+import com.testerloop.app.core.installedBuildLabel
 import com.testerloop.app.core.isActiveCampaign
 import com.testerloop.app.data.api.FileReportRequest
 import com.testerloop.app.data.api.SetOptInRequest
@@ -214,8 +215,7 @@ fun AppVm.submitReport(
     campaignId: String,
     severity: String,
     title: String,
-    body: String,
-    buildLabel: String
+    body: String
 ) {
     val state = ui.value
     if (state.reportBusy) return
@@ -235,6 +235,8 @@ fun AppVm.submitReport(
             val device = listOf(Build.MANUFACTURER, Build.MODEL)
                 .filter { it.isNotBlank() }
                 .joinToString(" ")
+            val packageName = state.mine.firstOrNull { it.campaignId == campaignId }?.packageName
+            val buildLabel = installedBuildLabel(appContext, packageName)
             session.withAuth { token ->
                 api.fileReport(
                     AppConfig.SUPABASE_ANON_KEY,
@@ -244,7 +246,7 @@ fun AppVm.submitReport(
                         severity = severity,
                         title = cleanTitle,
                         body = cleanBody,
-                        buildLabel = buildLabel.trim().ifBlank { null },
+                        buildLabel = buildLabel,
                         device = device.ifBlank { null }
                     )
                 ).orThrow()

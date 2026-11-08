@@ -136,6 +136,9 @@ sign-in, and TesterLoop Admin has no public signup.
 - No silent fallbacks: invalid input surfaces as an inline message and a toast, and
   the campaign keeps its previous state.
 - No comments unless they explain a non-obvious constraint.
+- Every change to the Android app under `mobile/` must be committed to Git after
+  it is verified, so the owner can review it. Do not leave mobile changes
+  uncommitted.
 
 ## 6. Modification log
 

@@ -1,6 +1,6 @@
 {
-  "versionCode": 10204,
-  "versionName": "1.2.4",
-  "apk": "TesterLoop-Mobile-1.2.4.apk",
-  "notes": "The 14-day project clock starts only after 12 testers confirm opt-in."
+  "versionCode": 10205,
+  "versionName": "1.2.5",
+  "apk": "TesterLoop-Mobile-1.2.5.apk",
+  "notes": "Update checks now use the release download page with retries, so a busy update server no longer blocks the update."
 }

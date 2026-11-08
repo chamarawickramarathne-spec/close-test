@@ -9,8 +9,10 @@ import androidx.core.content.FileProvider
 import com.testerloop.app.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 data class AppUpdate(
@@ -25,23 +27,44 @@ class UpdaterException(message: String) : Exception(message)
 
 object AppUpdater {
 
+    private const val ATTEMPTS = 3
+    private const val DOWNLOAD_ATTEMPTS = 3
+    private val APK_NAME = Regex("^[A-Za-z0-9._-]+\\.apk$")
+
     private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
     fun check(): AppUpdate? {
+        val manifest = runCatching { fetchManifest() }.getOrNull()
+        if (manifest != null) {
+            val versionCode = manifest.optInt("versionCode", 0)
+            val apkName = manifest.optString("apk")
+            if (versionCode > 0 && APK_NAME.matches(apkName)) {
+                if (versionCode <= BuildConfig.VERSION_CODE) return null
+                return AppUpdate(
+                    versionCode = versionCode,
+                    versionName = manifest.optString("versionName").ifBlank { "new version" },
+                    apkUrl = AppConfig.UPDATE_DOWNLOAD_BASE + apkName,
+                    apkSize = 0,
+                    notes = manifest.optString("notes").trim()
+                )
+            }
+        }
+        return checkFromApi()
+    }
+
+    private fun checkFromApi(): AppUpdate? {
         val request = Request.Builder()
             .url(AppConfig.UPDATE_CHECK_URL)
             .header("Accept", "application/vnd.github+json")
-            .header("User-Agent", "TesterLoop-Mobile/${BuildConfig.VERSION_NAME}")
+            .header("User-Agent", userAgent())
             .build()
-        client.newCall(request).execute().use { response ->
+        callWithRetry(request).use { response ->
             if (response.code == 404) return null
-            if (!response.isSuccessful) {
-                throw UpdaterException("The update server answered ${response.code}.")
-            }
+            if (!response.isSuccessful) throw UpdaterException(serverMessage(response.code))
             val body = response.body?.string().orEmpty()
             val json = JSONObject(body)
             if (json.optBoolean("draft", false)) return null
@@ -57,7 +80,9 @@ object AppUpdater {
                 val name = asset.optString("name")
                 when {
                     name.equals("mobile-version.json", true) ->
-                        manifest = runCatching { JSONObject(asset.optString("browser_download_url").let { url -> fetchText(url) }) }.getOrNull()
+                        manifest = runCatching {
+                            JSONObject(fetchTextOrNull(asset.optString("browser_download_url")).orEmpty())
+                        }.getOrNull()
                     name.endsWith(".apk", true) -> {
                         apkUrl = asset.optString("browser_download_url")
                         apkSize = asset.optLong("size")
@@ -94,14 +119,34 @@ object AppUpdater {
         val target = File(dir, "TesterLoop-${update.versionName}.apk")
         val request = Request.Builder()
             .url(update.apkUrl)
-            .header("User-Agent", "TesterLoop-Mobile/${BuildConfig.VERSION_NAME}")
+            .header("User-Agent", userAgent())
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw UpdaterException("The update download failed with ${response.code}.")
+        var lastMessage: String? = null
+        for (attempt in 0 until DOWNLOAD_ATTEMPTS) {
+            try {
+                downloadOnce(request, target, update.apkSize, onProgress)
+                return target
+            } catch (e: IOException) {
+                lastMessage = "The update download was interrupted. Check your connection and try again."
+            } catch (e: UpdaterException) {
+                throw e
             }
+            target.delete()
+            if (attempt < DOWNLOAD_ATTEMPTS - 1) sleep(attempt)
+        }
+        throw UpdaterException(lastMessage ?: "The update download failed.")
+    }
+
+    private fun downloadOnce(
+        request: Request,
+        target: File,
+        fallbackSize: Long,
+        onProgress: (Int) -> Unit
+    ) {
+        callWithRetry(request).use { response ->
+            if (!response.isSuccessful) throw UpdaterException(serverMessage(response.code))
             val body = response.body ?: throw UpdaterException("The update download was empty.")
-            val total = if (body.contentLength() > 0) body.contentLength() else update.apkSize
+            val total = if (body.contentLength() > 0) body.contentLength() else fallbackSize
             body.byteStream().use { input ->
                 target.outputStream().use { output ->
                     val buffer = ByteArray(64 * 1024)
@@ -122,9 +167,11 @@ object AppUpdater {
                     }
                 }
             }
+            if (total > 0 && target.length() != total) {
+                throw IOException("Incomplete download")
+            }
         }
         if (target.length() <= 0L) throw UpdaterException("The downloaded update is empty.")
-        return target
     }
 
     fun canInstall(context: Context): Boolean =
@@ -144,15 +191,55 @@ object AppUpdater {
             Uri.parse("package:${context.packageName}")
         ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-    private fun fetchText(url: String): String {
+    private fun fetchManifest(): JSONObject? {
+        val text = fetchTextOrNull(AppConfig.UPDATE_MANIFEST_URL) ?: return null
+        return runCatching { JSONObject(text) }.getOrNull()
+    }
+
+    private fun fetchTextOrNull(url: String): String? {
+        if (url.isBlank()) return null
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", "TesterLoop-Mobile/${BuildConfig.VERSION_NAME}")
+            .header("User-Agent", userAgent())
             .build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw UpdaterException("The version manifest answered ${response.code}.")
+        callWithRetry(request).use { response ->
+            if (response.code == 404) return null
+            if (!response.isSuccessful) throw UpdaterException(serverMessage(response.code))
             return response.body?.string().orEmpty()
         }
+    }
+
+    private fun callWithRetry(request: Request): Response {
+        var lastError: IOException? = null
+        for (attempt in 0 until ATTEMPTS) {
+            try {
+                val response = client.newCall(request).execute()
+                if (response.code in 500..599 && attempt < ATTEMPTS - 1) {
+                    response.close()
+                    sleep(attempt)
+                    continue
+                }
+                return response
+            } catch (e: IOException) {
+                lastError = e
+                if (attempt == ATTEMPTS - 1) throw e
+                sleep(attempt)
+            }
+        }
+        throw lastError ?: UpdaterException("The update server is unavailable. Try again in a minute.")
+    }
+
+    private fun serverMessage(code: Int): String =
+        if (code in 500..599) {
+            "The update server is busy ($code). Try again in a minute."
+        } else {
+            "The update server answered $code."
+        }
+
+    private fun userAgent(): String = "TesterLoop-Mobile/${BuildConfig.VERSION_NAME}"
+
+    private fun sleep(attempt: Int) {
+        runCatching { Thread.sleep(700L * (attempt + 1)) }
     }
 
     private fun parseVersion(tag: String): Triple<Int, Int, Int>? {

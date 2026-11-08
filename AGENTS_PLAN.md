@@ -1535,3 +1535,22 @@ Pending:
 - Supabase migrations `017`-`034` run by the owner, plus the QA purge in
   `sql/maintenance/purge_test_accounts.sql`.
 - Windows installers remain unsigned and have not been run end to end.
+
+## Release 1.2.5 Android - update check retries (2026-11-08)
+
+Completed:
+- Fixed the mobile updater reporting "The update server answered 504" from the
+  GitHub REST API with no retry.
+- Checks now read `releases/latest/download/mobile-version.json` from
+  `github.com` first and build the APK URL from its validated `apk` field, so the
+  normal path never calls `api.github.com`. The API remains a fallback.
+- `AppUpdater` retries 5xx and transport failures three times with backoff on the
+  check, manifest fetch and download; downloads are verified against
+  `Content-Length` and a truncated file is retried.
+- Android bumped to `1.2.5` (`versionCode 10205`); signed APK and AAB copied to
+  `release/`. Windows stays at `0.15.2`.
+
+Pending:
+- Install `1.2.5` once on a device; older clients keep the old updater until then.
+- Device-verify the retry path and manifest-first check; no device or accelerated
+  emulator is available here.

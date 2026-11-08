@@ -4338,3 +4338,68 @@ Date: 2026-11-08
   stays revoked from `public` / `anon` and granted only to `authenticated`, and
   the new fields are the tester's own campaign clock, not another account's
   data. Installers remain unsigned and have not been run end to end.
+
+### Modification 060
+
+Date: 2026-11-08
+
+#### Changes
+- Fixed the mobile in-app update failing with "The update server answered 504".
+  The updater called the GitHub REST API (`api.github.com/.../releases/latest`)
+  once; a transient 504 from that endpoint aborted the check with no retry.
+- Update checks now read the static release manifest first:
+  `https://github.com/<owner>/<repo>/releases/latest/download/mobile-version.json`.
+  The APK URL is built from the manifest `apk` field under the same
+  `releases/latest/download/` path, so a normal check no longer touches the REST
+  API at all. The API path remains as a fallback when the manifest is missing or
+  invalid.
+- Added retries with backoff to `AppUpdater`: three attempts for 5xx answers and
+  transport failures on the check, manifest fetch and APK download. A 5xx now
+  reads "The update server is busy (504). Try again in a minute." instead of the
+  bare status message.
+- Downloads are now verified against `Content-Length`; a truncated file is
+  deleted and retried instead of being handed to the installer. Read timeout
+  raised to 60 seconds for the ~13 MB APK on slow connections.
+- Added `AppConfig.UPDATE_MANIFEST_URL` and `AppConfig.UPDATE_DOWNLOAD_BASE`.
+- Android version bumped to `1.2.5` (`versionCode 10205`). Windows stays at
+  `0.15.2`; no Windows source changed.
+
+#### Files / Components
+- `mobile/app/src/main/kotlin/com/testerloop/app/core/AppUpdater.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/core/AppConfig.kt`
+- `mobile/app/build.gradle.kts`
+- `release/mobile-version.json`, `release/TesterLoop-Mobile-1.2.5.apk`,
+  `release/TesterLoop-Mobile-1.2.5.aab`
+- `build/android/TesterLoop-Mobile-1.2.5-debug.apk`,
+  `build/android/TesterLoop-Mobile-1.2.5-release.apk`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Root cause: `api.github.com` answered `504` once and the client had no retry.
+  The static manifest URL is served by `github.com` and redirected to the release
+  asset, so it avoids the API gateway and its anonymous rate limits.
+- The manifest-first path only trusts a version when `versionCode > 0` and the
+  `apk` value matches `^[A-Za-z0-9._-]+\.apk$`; anything else falls back to the
+  API path, so a malformed manifest cannot point the installer at another URL.
+- A release without `mobile-version.json` still updates through the API fallback.
+  A missing manifest (404) is treated as "use the API", not an error.
+- Verification: `:app:assembleDebug`, `:app:assembleRelease`,
+  `:app:bundleRelease` and `:app:lintDebug` succeed with 0 lint errors (26
+  warnings, 1 hint, dependency/deprecation only). `aapt` reports
+  `com.testerloop.app`, `versionCode 10205`, `versionName 1.2.5`, `minSdk 24`,
+  `targetSdk 36`; `apksigner` confirms the existing upload certificate and
+  `jarsigner -verify` exits 0 for the AAB.
+- Artifacts: `build/android/TesterLoop-Mobile-1.2.5-debug.apk` 18,880,838 bytes,
+  `build/android/TesterLoop-Mobile-1.2.5-release.apk` 13,043,980 bytes,
+  `release/TesterLoop-Mobile-1.2.5.apk` 13,043,980 bytes and
+  `release/TesterLoop-Mobile-1.2.5.aab` 12,723,297 bytes. Superseded `1.2.4`
+  copies were removed.
+- Not verified on a device: the retry path, the manifest-first check and the
+  download integrity check. No Android device or accelerated emulator is
+  available in this environment. Both update URLs were confirmed reachable from
+  the build machine (HTTP 200, correct content type).
+- A device still running `1.2.4` or older keeps the old updater until `1.2.5` is
+  installed once; after that, checks use the static manifest and retries.
+- Security: no secrets, endpoints or grants were added. The updater still only
+  installs through the system package installer after the user confirms, and the
+  manifest-derived APK name is validated before it is used.

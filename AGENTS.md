@@ -3907,3 +3907,44 @@ Date: 2026-11-08
   in this environment.
 - `032_daily_install_history.sql` is still not applied to the live Supabase
   project; that remains owner-run.
+
+### Modification 053
+
+Date: 2026-11-08
+
+#### Changes
+- Fixed the TesterLoop Admin close-test project page failing on every open with
+  `missing FROM-clause entry for table "h"`. `admin_campaign_detail` built the
+  campaign block from `h.seats_used`, `h.opted_in`, `h.days_banked`,
+  `h.meets_requirement`, `h.eligible_on` and `h.threshold_opt_in_at` but never
+  selected from `campaign_health`, so PostgreSQL rejected the statement before any
+  row was read.
+- The function now fetches `campaign_health` into `v_health` and reads those six
+  values from it, so `seats_used`, `opted_in`, `days_banked`, eligibility and the
+  clock start come back for the project page.
+- Fixed the same defect in `sql/migrations/031_admin_campaign_detail.sql` and in
+  the greenfield copy in `sql/functions/004_queries.sql`.
+- Added `sql/migrations/033_fix_admin_campaign_detail.sql` (preflight for
+  `campaign_health`, corrected function, revokes, grant, PostgREST reload) for the
+  live project.
+
+#### Files / Components
+- `sql/functions/004_queries.sql`
+- `sql/migrations/031_admin_campaign_detail.sql`
+- `sql/migrations/033_fix_admin_campaign_detail.sql` (new)
+- `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- SQL-only correction. No client source, RPC signature, DTO or validation rule
+  changed, so the Windows apps stay at `0.14.1` and no new build is required.
+- Owner must run `033_fix_admin_campaign_detail.sql` in the Supabase SQL Editor as
+  `postgres`; it is idempotent and only replaces `admin_campaign_detail`.
+- Root cause was a copy error: the surrounding dashboard function joins
+  `campaign_health h`, and the alias was reused while writing the new function
+  without carrying the join across.
+- Verified statically: no remaining `h.` reference in either copy of
+  `admin_campaign_detail`; the three other functions that use `h.` still join
+  `campaign_health`. No local Postgres, `psql`, `supabase` or `deno` CLI is
+  available, so `033` was not executed here.
+- Still owed from earlier rounds: `032_daily_install_history.sql` and the QA purge
+  in `sql/maintenance/purge_test_accounts.sql`.

@@ -20,6 +20,7 @@ declare
   v_package text;
   v_group public.google_groups%rowtype;
   v_testers_used int;
+  v_health public.campaign_health%rowtype;
 begin
   select * into v_campaign
   from public.campaigns
@@ -47,6 +48,10 @@ begin
   from public.campaign_seats s
   where s.campaign_id = p_campaign_id;
 
+  select * into v_health
+  from public.campaign_health
+  where campaign_id = p_campaign_id;
+
   return jsonb_build_object(
     'usage_available', true,
     'campaign', jsonb_build_object(
@@ -71,14 +76,14 @@ begin
       'group_state', v_group.state::text,
       'group_provisioned_at', v_group.provisioned_at,
       'group_settings_confirmed_at', v_group.settings_confirmed_at,
-      'seats_used', coalesce(h.seats_used, 0),
+      'seats_used', coalesce(v_health.seats_used, 0),
       'seats_free', greatest(15 - v_testers_used, 0),
       'testers_used', v_testers_used,
-      'opted_in', coalesce(h.opted_in, 0),
-      'days_banked', coalesce(h.days_banked, 0),
-      'meets_requirement', coalesce(h.meets_requirement, false),
-      'eligible_on', h.eligible_on,
-      'clock_started_at', h.threshold_opt_in_at,
+      'opted_in', coalesce(v_health.opted_in, 0),
+      'days_banked', coalesce(v_health.days_banked, 0),
+      'meets_requirement', coalesce(v_health.meets_requirement, false),
+      'eligible_on', v_health.eligible_on,
+      'clock_started_at', v_health.threshold_opt_in_at,
       'first_opt_in_at', v_campaign.first_opt_in_at,
       'started_at', v_campaign.started_at,
       'passed_at', v_campaign.passed_at,

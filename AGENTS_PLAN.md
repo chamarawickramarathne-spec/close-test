@@ -1417,3 +1417,17 @@ Pending:
 - Still owed from earlier rounds: `017`-`032` migrations and the QA purge
   (`sql/maintenance/purge_test_accounts.sql`).
 - Windows installers remain unsigned and have not been run end to end.
+## Fix - admin project detail SQL (2026-11-08)
+
+Completed:
+- Fixed `admin_campaign_detail` using `h.` (campaign_health) without selecting
+  from the view, which made every close-test project page fail with
+  `missing FROM-clause entry for table "h"`.
+- The function now loads the view into `v_health`; `031` and the greenfield
+  `004_queries.sql` copy are corrected, and `033_fix_admin_campaign_detail.sql`
+  applies the fix to the live project.
+- SQL-only change; Windows stays `0.14.1`, no client rebuild.
+
+Pending:
+- Owner must run `033_fix_admin_campaign_detail.sql` in Supabase after `031`.
+- Verify the project page opens with real data once `033` is applied.

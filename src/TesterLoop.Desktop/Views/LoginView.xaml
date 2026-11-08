@@ -1,0 +1,160 @@
+<UserControl x:Class="TesterLoop.Desktop.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource CanvasBrush}"
+             FontFamily="{StaticResource UiFont}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.05*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{StaticResource RailBrush}" Padding="56,48">
+            <StackPanel VerticalAlignment="Center" MaxWidth="470" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="12" Background="{StaticResource AccentBrush}">
+                        <TextBlock Text="TL"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="TesterLoop"
+                                   FontSize="17"
+                                   FontWeight="SemiBold"
+                                   Foreground="White" />
+                        <TextBlock Text="Closed testing, done for you"
+                                   FontSize="11"
+                                   Foreground="{StaticResource RailTextBrush}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="Ship to production without chasing testers."
+                           Margin="0,46,0,0"
+                           FontSize="28"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           TextWrapping="Wrap"
+                           LineHeight="37" />
+
+                <TextBlock Text="Google Play asks most new developer accounts for 12 testers who stay opted in for 14 continuous days. We keep a 15-seat group ready, watch the clock, and tell you the moment you qualify."
+                           Margin="0,18,0,0"
+                           FontSize="13"
+                           Foreground="{StaticResource RailTextBrush}"
+                           TextWrapping="Wrap"
+                           LineHeight="22" />
+
+                <StackPanel Margin="0,40,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Border Width="26" Height="26" CornerRadius="13" Background="#243156">
+                            <TextBlock Text="1" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Create a developer or tester account"
+                                   Margin="12,0,0,0" FontSize="12.5"
+                                   Foreground="{StaticResource RailTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Border Width="26" Height="26" CornerRadius="13" Background="#243156">
+                            <TextBlock Text="2" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Operations creates the Google Group and attaches its address"
+                                   Margin="12,0,0,0" FontSize="12.5"
+                                   Foreground="{StaticResource RailTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="26" Height="26" CornerRadius="13" Background="#243156">
+                            <TextBlock Text="3" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Testers join, opt in, and the 14 days start counting"
+                                   Margin="12,0,0,0" FontSize="12.5"
+                                   Foreground="{StaticResource RailTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="380" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32,48">
+                <TextBlock Text="SIGN IN" Style="{StaticResource Eyebrow}" />
+                <TextBlock Text="Welcome back" Style="{StaticResource H2}" Margin="0,8,0,0" />
+                <TextBlock Text="Choose a workspace for this sign-in. One account can use both the developer and tester sides."
+                           Style="{StaticResource Caption}"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0,10,0,0" />
+
+                <Border Background="{StaticResource GoodSoftBrush}"
+                        CornerRadius="8"
+                        Padding="10,8"
+                        Margin="0,16,0,0"
+                        Visibility="{Binding HasNotice, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding Notice}"
+                               FontSize="11.5"
+                               Foreground="{StaticResource GoodBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <TextBlock Text="SIGN IN AS" Style="{StaticResource Eyebrow}" Margin="0,24,0,7" />
+                <ComboBox ItemsSource="{Binding Roles}"
+                          SelectedItem="{Binding SelectedRole}"
+                          Padding="8,6"
+                          FontSize="13" />
+
+                <TextBlock Text="EMAIL" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                <TextBox x:Name="EmailInput"
+                         Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="PASSWORD" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged" />
+
+                <Grid Margin="0,10,0,0">
+                    <TextBlock Text="Password and account help"
+                               FontSize="11.5"
+                               Foreground="{StaticResource MutedBrush}"
+                               VerticalAlignment="Center" />
+                    <Button Content="Forgot password?"
+                            Style="{StaticResource QuietButton}"
+                            Command="{Binding ForgotPasswordCommand}"
+                            HorizontalAlignment="Right" />
+                </Grid>
+
+                <Border Background="{StaticResource BadSoftBrush}"
+                        CornerRadius="8"
+                        Padding="10,8"
+                        Margin="0,12,0,0"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding Error}"
+                               FontSize="11.5"
+                               Foreground="{StaticResource BadBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <Button Content="Sign in"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding SignInCommand}"
+                        IsDefault="True"
+                        Padding="14,11"
+                        Margin="0,20,0,0" />
+
+                <Border Height="1" Background="{StaticResource LineBrush}" Margin="0,26,0,0" />
+
+                <TextBlock Text="NEW HERE?" Style="{StaticResource Eyebrow}" Margin="0,18,0,7" />
+                <TextBlock Text="Create a developer workspace to run a closed test, or a tester account to join campaigns."
+                           Style="{StaticResource Caption}"
+                           FontSize="11.5"
+                           TextWrapping="Wrap" />
+                <Button Content="Create an account"
+                        Style="{StaticResource GhostButton}"
+                        Command="{Binding SignUpCommand}"
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Left" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,29 @@
+<UserControl x:Class="TesterLoop.Desktop.Views.DeveloperView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:TesterLoop.Desktop.Views"
+             FontFamily="{StaticResource UiFont}">
+
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0">
+        <TabControl.Template>
+            <ControlTemplate TargetType="TabControl">
+                <Grid>
+                    <TabPanel IsItemsHost="True" Visibility="Collapsed" />
+                    <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" />
+                </Grid>
+            </ControlTemplate>
+        </TabControl.Template>
+        <TabItem>
+            <views:DeveloperWorkspaceView />
+        </TabItem>
+        <TabItem>
+            <views:DeveloperCompletedView />
+        </TabItem>
+        <TabItem>
+            <views:DeveloperProfileView />
+        </TabItem>
+    </TabControl>
+</UserControl>

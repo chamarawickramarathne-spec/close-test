@@ -1,0 +1,283 @@
+<UserControl x:Class="TesterLoop.Admin.Views.AdminTesterDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}">
+
+    <UserControl.Resources>
+        <Style x:Key="DetailMetric" TargetType="TextBlock" BasedOn="{StaticResource Metric}">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="DetailEyebrow" TargetType="TextBlock" BasedOn="{StaticResource Eyebrow}">
+            <Setter Property="FontSize" Value="9.5" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,24,28,36">
+            <Button Content="Back to testers"
+                    Style="{StaticResource GhostButton}"
+                    HorizontalAlignment="Left"
+                    Command="{Binding BackToTestersCommand}" />
+
+            <Grid Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding TesterDetail.Name}" FontSize="19" FontWeight="SemiBold"
+                               Foreground="{StaticResource InkBrush}" />
+                    <TextBlock Margin="0,4,0,0" Style="{StaticResource Caption}">
+                        <Run Text="{Binding TesterDetail.Email, Mode=OneWay}" />
+                        <Run Text=" &#183; " />
+                        <Run Text="{Binding TesterDetail.Google, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Margin="0,2,0,0" Style="{StaticResource Caption}">
+                        <Run Text="{Binding TesterDetail.Region, Mode=OneWay}" />
+                        <Run Text=" &#183; " />
+                        <Run Text="{Binding TesterDetail.Devices, Mode=OneWay}" />
+                        <Run Text=" &#183; joined " />
+                        <Run Text="{Binding TesterDetail.Created, Mode=OneWay}" />
+                    </TextBlock>
+                </StackPanel>
+                <Border Background="{StaticResource SurfaceAltBrush}"
+                        BorderBrush="{StaticResource LineBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Padding="12,6"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top">
+                    <TextBlock Text="{Binding TesterDetail.Status}" FontSize="11"
+                               Foreground="{StaticResource InkSoftBrush}" />
+                </Border>
+            </Grid>
+
+            <Border Background="{StaticResource BadSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Error}" FontSize="11"
+                           Foreground="{StaticResource BadBrush}" TextWrapping="Wrap" />
+            </Border>
+
+            <Border Background="{StaticResource GoodSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding HasToast, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Toast}" FontSize="11"
+                           Foreground="{StaticResource GoodBrush}" TextWrapping="Wrap" />
+            </Border>
+
+            <Border Background="{StaticResource WarnSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding TesterDetail.HasUsageNotice, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding TesterDetail.UsageNotice}" FontSize="11"
+                           Foreground="{StaticResource WarnBrush}" TextWrapping="Wrap" />
+            </Border>
+
+            <Grid Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource Card}" Padding="16,14" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="PROJECTS" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Text="{Binding TesterDetail.ProjectsLabel}" Style="{StaticResource DetailMetric}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}" Padding="16,14" Margin="4,0,4,0">
+                    <StackPanel>
+                        <TextBlock Text="REPORTS" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Text="{Binding TesterDetail.ReportsLabel}" Style="{StaticResource DetailMetric}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource Card}" Padding="16,14" Margin="4,0,4,0">
+                    <StackPanel>
+                        <TextBlock Text="ELIGIBLE FEES" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Text="{Binding TesterDetail.EligibleLabel}" Style="{StaticResource DetailMetric}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource Card}" Padding="16,14" Margin="4,0,4,0">
+                    <StackPanel>
+                        <TextBlock Text="OWED" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Text="{Binding TesterDetail.DueLabel}" Style="{StaticResource DetailMetric}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="4" Style="{StaticResource Card}" Padding="16,14" Margin="4,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="PAID" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Text="{Binding TesterDetail.PaidLabel}" Style="{StaticResource DetailMetric}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0" Padding="20,18">
+                <StackPanel>
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="PROJECT PAYOUTS" Style="{StaticResource DetailEyebrow}" />
+                            <TextBlock Text="A $0.50 fee is earned when the project has passed and the tester filed a report."
+                                       Style="{StaticResource Caption}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock Text="Reference" Style="{StaticResource Caption}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBox Text="{Binding TesterPayoutReference, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="180"
+                                     ToolTip="Optional. Leave blank to use TP- plus the seat id." />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,14,0,9">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="82" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="104" />
+                            <ColumnDefinition Width="76" />
+                            <ColumnDefinition Width="64" />
+                            <ColumnDefinition Width="76" />
+                            <ColumnDefinition Width="112" />
+                            <ColumnDefinition Width="92" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="PROJECT" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Grid.Column="1" Text="STATE" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Grid.Column="2" Text="OPT-IN" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Grid.Column="3" Text="USAGE" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Grid.Column="4" Text="REPORTS" Style="{StaticResource DetailEyebrow}"
+                                   TextAlignment="Right" />
+                        <TextBlock Grid.Column="5" Text="FEE" Style="{StaticResource DetailEyebrow}"
+                                   TextAlignment="Right" />
+                        <TextBlock Grid.Column="6" Text="PAYOUT" Style="{StaticResource DetailEyebrow}"
+                                   TextAlignment="Right" />
+                        <TextBlock Grid.Column="7" Text="REFERENCE" Style="{StaticResource DetailEyebrow}"
+                                   TextAlignment="Right" />
+                        <TextBlock Grid.Column="8" Text="ACTION" Style="{StaticResource DetailEyebrow}"
+                                   TextAlignment="Right" />
+                    </Grid>
+
+                    <Border Height="1" Background="{StaticResource LineBrush}" />
+
+                    <ItemsControl ItemsSource="{Binding TesterDetail.Campaigns}" Margin="0,2,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="{StaticResource LineBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="82" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="104" />
+                                            <ColumnDefinition Width="76" />
+                                            <ColumnDefinition Width="64" />
+                                            <ColumnDefinition Width="76" />
+                                            <ColumnDefinition Width="112" />
+                                            <ColumnDefinition Width="92" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding AppName}" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource InkBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding AppName}" />
+                                            <TextBlock Text="{Binding Developer}" FontSize="10"
+                                                       Foreground="{StaticResource MutedBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Developer}" />
+                                            <TextBlock Text="{Binding SeatLabel}" FontSize="10"
+                                                       Foreground="{StaticResource MutedBrush}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding StateLabel}" Style="{StaticResource Caption}"
+                                                   FontSize="10" VerticalAlignment="Center"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="2" Text="{Binding OptInLabel}" Style="{StaticResource Caption}"
+                                                   FontSize="10" VerticalAlignment="Center"
+                                                   TextWrapping="Wrap" />
+                                        <StackPanel Grid.Column="3" VerticalAlignment="Center"
+                                                    ToolTip="{Binding UsageTooltip}">
+                                            <TextBlock Text="{Binding UsageStateLabel}" FontSize="10"
+                                                       FontWeight="SemiBold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding UsageTone}" Value="good">
+                                                                <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding UsageTone}" Value="warn">
+                                                                <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding UsageDaysLabel}" FontSize="10"
+                                                       Foreground="{StaticResource InkSoftBrush}" />
+                                            <TextBlock Text="{Binding UsageDetail}" FontSize="9.5"
+                                                       Foreground="{StaticResource MutedBrush}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="4" Text="{Binding ReportsLabel}" Style="{StaticResource Caption}"
+                                                   FontSize="10" VerticalAlignment="Center"
+                                                   TextAlignment="Right" />
+                                        <TextBlock Grid.Column="5" Text="{Binding FeeLabel}" FontSize="11"
+                                                   Foreground="{StaticResource InkBrush}"
+                                                   VerticalAlignment="Center"
+                                                   TextAlignment="Right" />
+                                        <TextBlock Grid.Column="6" Text="{Binding PayoutLabel}" FontSize="10"
+                                                   VerticalAlignment="Center"
+                                                   TextAlignment="Right">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding PayoutTone}" Value="good">
+                                                            <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding PayoutTone}" Value="warn">
+                                                            <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="7" Text="{Binding Reference}" Style="{StaticResource Caption}"
+                                                   FontSize="10" VerticalAlignment="Center"
+                                                   TextAlignment="Right"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Reference}" />
+                                        <Button Grid.Column="8"
+                                                Content="{Binding ActionLabel}"
+                                                IsEnabled="{Binding CanPay}"
+                                                Style="{StaticResource GhostButton}"
+                                                FontSize="10.5"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.MarkTesterPaidCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="This tester has not joined a project yet." Margin="0,14,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Caption}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TesterDetail.HasCampaigns}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

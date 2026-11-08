@@ -1,0 +1,36 @@
+<Application x:Class="TesterLoop.Desktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TesterLoop.Desktop.ViewModels"
+             xmlns:views="clr-namespace:TesterLoop.Desktop.Views"
+             xmlns:sharedViews="clr-namespace:TesterLoop.Desktop.Views;assembly=TesterLoop.Shared">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/TesterLoop.Shared;component/Theme/Tokens.xaml" />
+                <ResourceDictionary Source="/TesterLoop.Shared;component/Theme/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+            <DataTemplate DataType="{x:Type vm:LoginViewModel}">
+                <views:LoginView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:SignUpViewModel}">
+                <views:SignUpView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ResetPasswordViewModel}">
+                <views:ResetPasswordView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ShellViewModel}">
+                <sharedViews:ShellView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:DeveloperViewModel}">
+                <views:DeveloperView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:TesterViewModel}">
+                <views:TesterView />
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

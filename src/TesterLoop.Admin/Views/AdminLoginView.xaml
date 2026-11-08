@@ -1,0 +1,129 @@
+<UserControl x:Class="TesterLoop.Admin.Views.AdminLoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource CanvasBrush}"
+             FontFamily="{StaticResource UiFont}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.05*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{StaticResource RailBrush}" Padding="56,48">
+            <StackPanel VerticalAlignment="Center" MaxWidth="470" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="44" Height="44" CornerRadius="12" Background="{StaticResource AccentBrush}">
+                        <TextBlock Text="OPS"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="TesterLoop Admin"
+                                   FontSize="17"
+                                   FontWeight="SemiBold"
+                                   Foreground="White" />
+                        <TextBlock Text="Closed testing operations"
+                                   FontSize="11"
+                                   Foreground="{StaticResource RailTextBrush}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="Every group, every seat, one operations queue."
+                           Margin="0,46,0,0"
+                           FontSize="28"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           TextWrapping="Wrap"
+                           LineHeight="37" />
+
+                <TextBlock Text="Create each Google Group by hand, attach its address, activate the project and watch the 12-tester clock. The queue and audit trail keep every step visible."
+                           Margin="0,18,0,0"
+                           FontSize="13"
+                           Foreground="{StaticResource RailTextBrush}"
+                           TextWrapping="Wrap"
+                           LineHeight="22" />
+
+                <StackPanel Margin="0,40,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Border Width="26" Height="26" CornerRadius="13" Background="#243156">
+                            <TextBlock Text="1" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Check projects waiting for a Google Group"
+                                   Margin="12,0,0,0" FontSize="12.5"
+                                   Foreground="{StaticResource RailTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Border Width="26" Height="26" CornerRadius="13" Background="#243156">
+                            <TextBlock Text="2" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Create the group and attach its address"
+                                   Margin="12,0,0,0" FontSize="12.5"
+                                   Foreground="{StaticResource RailTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="26" Height="26" CornerRadius="13" Background="#243156">
+                            <TextBlock Text="3" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Monitor seats, opt-ins and the audit trail"
+                                   Margin="12,0,0,0" FontSize="12.5"
+                                   Foreground="{StaticResource RailTextBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="380" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32,48">
+                <TextBlock Text="OPERATIONS SIGN IN" Style="{StaticResource Eyebrow}" />
+                <TextBlock Text="Admin workspace" Style="{StaticResource H2}" Margin="0,8,0,0" />
+                <TextBlock Text="Sign in with your TesterLoop operations account. Developer and tester accounts are refused here."
+                           Style="{StaticResource Caption}"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0,10,0,0" />
+
+                <TextBlock Text="EMAIL" Style="{StaticResource Eyebrow}" Margin="0,24,0,7" />
+                <TextBox x:Name="EmailInput"
+                         Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="PASSWORD" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged" />
+
+                <Border Background="{StaticResource BadSoftBrush}"
+                        CornerRadius="8"
+                        Padding="10,8"
+                        Margin="0,16,0,0"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding Error}"
+                               FontSize="11.5"
+                               Foreground="{StaticResource BadBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <Button Content="Sign in to operations"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding SignInCommand}"
+                        IsDefault="True"
+                        Padding="14,11"
+                        Margin="0,20,0,0" />
+
+                <Border Height="1" Background="{StaticResource LineBrush}" Margin="0,26,0,0" />
+
+                <TextBlock Text="OPERATIONS ACCOUNTS"
+                           Style="{StaticResource Eyebrow}"
+                           Margin="0,18,0,7" />
+                <TextBlock Text="Operations accounts are provisioned by TesterLoop and cannot be created from this app."
+                           Style="{StaticResource Caption}"
+                           FontSize="11.5"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

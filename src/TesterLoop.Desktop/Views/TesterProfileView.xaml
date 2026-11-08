@@ -1,0 +1,67 @@
+<UserControl x:Class="TesterLoop.Desktop.Views.TesterProfileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,24,28,36" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="PROFILE" Style="{StaticResource Eyebrow}" />
+            <TextBlock Text="Your tester profile"
+                       Style="{StaticResource H2}"
+                       Margin="0,8,0,0" />
+            <TextBlock Text="Your Google email must match the account added to the Play tester list. Your sign-in email cannot be changed here."
+                       Style="{StaticResource Body}"
+                       Margin="0,4,0,0" />
+
+            <Border Background="{StaticResource BadSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Error}" FontSize="11.5"
+                           Foreground="{StaticResource BadBrush}" TextWrapping="Wrap" />
+            </Border>
+            <Border Background="{StaticResource GoodSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding HasToast, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Toast}" FontSize="11.5"
+                           Foreground="{StaticResource GoodBrush}" TextWrapping="Wrap" />
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Display name" Style="{StaticResource Caption}" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Region" Style="{StaticResource Caption}" Margin="0,10,0,5" />
+                            <TextBox Text="{Binding ProfileRegion, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Google account email" Style="{StaticResource Caption}" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding ProfileGoogleEmail, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Device type (from mobile app)" Style="{StaticResource Caption}" Margin="0,10,0,5" />
+                            <Border Style="{StaticResource FlatCard}" Padding="10,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding MobileDeviceLabel}" FontSize="12.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding MobileDeviceNote}" Style="{StaticResource Caption}"
+                                               Margin="0,3,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                    <WrapPanel Margin="0,14,0,0">
+                        <Button Content="Save profile"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding SaveProfileCommand}"
+                                Margin="0,0,6,0" />
+                        <Button Content="Discard changes"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding ResetProfileCommand}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

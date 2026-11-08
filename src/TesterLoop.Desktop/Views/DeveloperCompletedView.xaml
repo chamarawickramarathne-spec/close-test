@@ -1,0 +1,75 @@
+<UserControl x:Class="TesterLoop.Desktop.Views.DeveloperCompletedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,24,28,36" MaxWidth="880" HorizontalAlignment="Left">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="COMPLETED PROJECTS" Style="{StaticResource Eyebrow}" />
+                    <TextBlock Text="{Binding CompletedCountLabel}"
+                               Style="{StaticResource Caption}"
+                               Margin="10,0,0,0"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Content="Refresh"
+                        Style="{StaticResource GhostButton}"
+                        Command="{Binding RefreshCommand}"
+                        HorizontalAlignment="Right" />
+            </Grid>
+
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0"
+                    Visibility="{Binding HasCompletedProjects, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding CompletedCampaigns}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="84" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding AppName}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource InkBrush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding PackageName}" Style="{StaticResource Caption}"
+                                               FontFamily="{StaticResource MonoFont}" FontSize="10.5"
+                                               Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding StateLabel}" FontSize="11.5"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{Binding TestersLabel}" Style="{StaticResource Caption}"
+                                           VerticalAlignment="Center" TextAlignment="Right" />
+                                <Button Grid.Column="3"
+                                        Content="Delete"
+                                        Style="{StaticResource GhostButton}"
+                                        Foreground="{StaticResource BadBrush}"
+                                        BorderBrush="{StaticResource BadBrush}"
+                                        FontSize="11"
+                                        Padding="10,6"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.DeleteCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding CanDelete}"
+                                        ToolTip="{Binding DeleteNote}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0"
+                    Visibility="{Binding HasNoCompletedProjects, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel>
+                    <TextBlock Text="No completed projects" Style="{StaticResource H2}" />
+                    <TextBlock Text="Projects appear here after they pass the 14-day test or are cancelled."
+                               Style="{StaticResource Body}" Margin="0,6,0,0" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

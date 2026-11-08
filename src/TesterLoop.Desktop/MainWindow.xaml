@@ -1,0 +1,17 @@
+<Window x:Class="TesterLoop.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TesterLoop"
+        Height="900"
+        Width="1380"
+        MinHeight="600"
+        MinWidth="1000"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource CanvasBrush}"
+        FontFamily="{StaticResource UiFont}"
+        TextOptions.TextFormattingMode="Ideal"
+        UseLayoutRounding="True">
+
+    <ContentControl Content="{Binding Current}" />
+</Window>

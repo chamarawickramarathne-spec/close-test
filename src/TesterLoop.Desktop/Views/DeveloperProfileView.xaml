@@ -1,0 +1,60 @@
+<UserControl x:Class="TesterLoop.Desktop.Views.DeveloperProfileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,24,28,36" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="PROFILE" Style="{StaticResource Eyebrow}" />
+            <TextBlock Text="Your developer profile"
+                       Style="{StaticResource H2}"
+                       Margin="0,8,0,0" />
+            <TextBlock Text="These details appear to testers and operations. Your sign-in email cannot be changed here."
+                       Style="{StaticResource Body}"
+                       Margin="0,4,0,0" />
+
+            <Border Background="{StaticResource BadSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Error}" FontSize="11.5"
+                           Foreground="{StaticResource BadBrush}" TextWrapping="Wrap" />
+            </Border>
+            <Border Background="{StaticResource GoodSoftBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                    Visibility="{Binding HasToast, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding Toast}" FontSize="11.5"
+                           Foreground="{StaticResource GoodBrush}" TextWrapping="Wrap" />
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Display name" Style="{StaticResource Caption}" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Company or studio" Style="{StaticResource Caption}" Margin="0,10,0,5" />
+                            <TextBox Text="{Binding ProfileCompany, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Contact email" Style="{StaticResource Caption}" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding ProfileContactEmail, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Google account email" Style="{StaticResource Caption}" Margin="0,10,0,5" />
+                            <TextBox Text="{Binding ProfileGoogleEmail, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </Grid>
+                    <WrapPanel Margin="0,14,0,0">
+                        <Button Content="Save profile"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding SaveProfileCommand}"
+                                Margin="0,0,6,0" />
+                        <Button Content="Discard changes"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding ResetProfileCommand}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

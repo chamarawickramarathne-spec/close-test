@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>TesterLoop</AssemblyName>
+    <RootNamespace>TesterLoop.Desktop</RootNamespace>
+    <Version>0.14.1</Version>
+    <Company>TesterLoop</Company>
+    <Product>TesterLoop</Product>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
+    <SelfContained>false</SelfContained>
+    <ApplicationIcon>..\..\media\icons\testerloop.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TesterLoop.Shared\TesterLoop.Shared.csproj" />
+  </ItemGroup>
+</Project>

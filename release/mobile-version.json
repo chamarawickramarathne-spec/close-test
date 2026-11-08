@@ -1,0 +1,6 @@
+{
+  "versionCode": 10202,
+  "versionName": "1.2.2",
+  "apk": "TesterLoop-Mobile-1.2.2.apk",
+  "notes": "Adds in-app update checks, signed release builds and the daily install history delivery."
+}

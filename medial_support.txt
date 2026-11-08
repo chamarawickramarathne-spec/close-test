@@ -1,0 +1,485 @@
+TESTERLOOP - MEDIA & MARKETING SUPPORT
+Last updated: 2026-11-08
+Application version: 0.14.1 desktop (Windows x86 / x64, main app + admin app)
+                   1.2.2 Android tester app (signed APK + AAB)
+
+==========================================================
+1. APPLICATION TITLE
+==========================================================
+
+TesterLoop & TesterLoop Admin - Google Play Closed Testing, Without the Spreadsheet
+
+==========================================================
+2. SHORT DESCRIPTION
+==========================================================
+
+TesterLoop runs a Google Play closed test from two focused Windows apps with real
+accounts: choose Developer or Tester when you sign in. Developers pick an
+operations-defined payment package when creating a project. Operations confirm the
+fee, reserve the exact Google Group identity, open Google's group creation page,
+create the group by hand and attach it in TesterLoop Admin. TesterLoop Mobile
+verifies each tester's opt-in against that group, while the main app tracks the
+12-tester / 14-day clock and shows the day the app is actually eligible for
+production. Testers can also use the Android app to join projects, confirm opt-in,
+report issues and record install and daily usage evidence.
+
+==========================================================
+3. LONG DESCRIPTION
+==========================================================
+
+Google Play will not let most new personal developer accounts publish until a
+closed test has kept at least 12 testers opted in for 14 continuous days. Since
+2026 it also looks at whether those testers actually used the app. Managing that by
+hand means a spreadsheet, a mailing list, a group of fifteen people who keep
+dropping out, and no reliable answer to the question "are we eligible yet?"
+
+TesterLoop is a Windows desktop suite that runs the whole programme. Developers and
+testers use TesterLoop; the operations team uses TesterLoop Admin. Each audience
+gets its own workspace and never sees another side of the business. One account can
+sign in as either Developer or Tester, and the missing profile is created on first
+use without a second registration. Accounts can be created in the main app, signed
+in from any Windows machine, and recovered by email. The Android tester app is the
+tester workspace only: a developer account can also use it to test, while
+operations accounts are refused. Operations accounts are provisioned separately and
+the admin app has no public signup.
+
+How a run works
+- The developer creates a project in the app and chooses one active payment
+  package. The package sets the project fee and the tester payout. The project
+  waits as Pending.
+- The developer pays the project fee quoting the reference shown in the app, and
+  operations confirms the payment in TesterLoop Admin.
+- Confirming the fee reserves that project's exact Google Group identity: a
+  per-developer sequence number, an `@googlegroups.com` address and the display
+  name operations must use. It also selects that project in the group-setup queue
+  and points operations to the Open group create page button.
+- Google does not allow apps to create personal `@gmail.com` groups, so operations
+  open Google's page, create the group by hand with the reserved values, confirm
+  the five settings and attach the exact reserved identity. TesterLoop never claims
+  to create or verify the group itself, and no automated group API is involved.
+- Once the group is attached, the developer pastes its address into Play Console,
+  saves the closed-test or Play store link in TesterLoop, and the project goes
+  Live.
+- Testers see the open project and press Join. TesterLoop records the seat and
+  opens that project's Google Group page (`groups.google.com/g/<group-name>`) in
+  their browser, where they request access and receive Play updates.
+- The tester then opens the Play testing page in the same browser to opt in.
+- Back in TesterLoop Mobile, after allowing Usage Access, the tester presses
+  Confirm opt-in. The app checks that their Google address is actually an active
+  member of that project's Google Group, and only a confirmed membership turns the
+  seat into a verified opt-in.
+- The app counts verified opted-in testers, continuous days and used seats until
+  the campaign meets the 12-tester / 14-day requirement.
+- On Android, the tester app checks whether the campaign package is installed,
+  records foreground usage for that app once usage access is granted, and syncs
+  the daily evidence in the background. Usage is only tracked for projects the
+  tester joined, never across the whole device.
+
+Who it is for
+- Indie Android developers and small studios publishing their first Play apps.
+- QA leads running closed tests for multiple titles at once.
+- Testing communities and agencies that supply vetted testers to developers.
+
+Main features
+- Real accounts in two apps. TesterLoop lets one account choose Developer or
+  Tester at sign-in, adds the missing profile automatically, and offers open
+  signup plus email-code password recovery; TesterLoop Admin handles operations
+  sign-in with no public signup.
+- Operations-defined payment packages. Each package carries a name, a project fee
+  and a tester payout. Operations create, edit, activate, retire or delete unused
+  packages on a dedicated Payment Packages page. A package that has already priced
+  a project is kept for history and can only be retired. The default Standard
+  package is $15.00 with a $0.50 tester payout, and more packages can be added for
+  different project tiers.
+- Package terms are copied onto the project. A campaign keeps the fee and payout
+  that were chosen when it was created, so editing a package later never rewrites
+  an existing project or an amount already owed.
+- Cloud-backed workspaces. Projects, seats, opt-ins, reports and package pricing
+  are stored in Supabase and loaded through checked server functions, so each
+  account sees only its own side.
+- Remembers your last sign-in. The email address you used last is filled in next
+  time; the password and session are never stored on disk.
+- Developer workspace. Create a project, choose a package, pay the project fee, see
+  that operations is creating the group, then copy the attached group address, add
+  the Play link, and watch the eligibility clock.
+- Clear project payments. Each project shows its fee, a `TL-XXXXXXXX` reference
+  and its payment state. Operations confirm the payment in the admin app, which
+  reserves the exact group number, address and display name. The Play link stays
+  locked until the fee is recorded and the group is attached.
+- A real eligibility clock. Opted-in testers, continuous days banked and seats used
+  are shown on one screen, with the exact day you can apply for production.
+- Fifteen-tester limit, enforced. A project may use at most 15 testers in total,
+  because every tester is paid. Counts include testers who later drop, and the
+  limit is checked in the data layer, not just the interface.
+- Tester payouts, audited per person. Each tester earns the project's copied tester
+  payout once the project has passed and that tester has filed at least one report.
+  Operations open the tester's detail page, see every project, report count,
+  verified opt-in date, fee and reference, and record the payout with one action.
+  A confirmation writes an audit row, and a payout cannot be recorded before the
+  project passes or for a tester who never reported.
+- Mobile usage at a glance. Each project row on the tester detail page shows whether
+  TesterLoop Mobile is installed, continuous-day progress against the 14-day usage
+  requirement, and the last usage date. Operations can spot a tester who joined but
+  is not running the app without opening a separate report, while the underlying
+  summary stays admin-only.
+- Reports with usage evidence. While a project is live, TesterLoop Mobile records a
+  daily install check for that project's package and keeps the whole run on file.
+  When a tester files a report, the app stores that project's install history and
+  usage state with it, so operations can see what the tester's phone looked like
+  during the run instead of guessing later. Missing evidence is shown as Not
+  captured or Not reported; it never blocks the report.
+- Full report detail for operations. Selecting any report in TesterLoop Admin opens
+  severity, status, tester, project, device and build, the reproduction notes, the
+  attached evidence links, a side-by-side view of the usage captured with the
+  report and the tester's current usage, and the daily install checks recorded up
+  to the report date. A project package mismatch is called out with a clear
+  warning.
+- Developer account view. Selecting a developer opens a full account page with the
+  studio and contact details, every project and its payment state, attached Google
+  Groups, the testers on those projects, project fees paid and due, tester payouts
+  paid and due, and the related recent audit entries.
+- Active projects only. Passed and cancelled projects move to a separate Completed
+  projects page, so the workspace stays focused on tests that are still running.
+- Delete your own projects, safely. A developer can remove a pending, active or
+  completed project they own, from its detail page or the Completed projects list.
+  The app asks for confirmation, then removes the project, its seats, roster and
+  reports. Once any tester confirms opt-in the project is locked until the 14-day
+  run completes, so a live test cannot be removed mid-flight. A project with
+  recorded tester payouts is refused so its financial record survives.
+- A clear left-hand menu. Developers move between Workspace, Completed projects and
+  Profile; testers move between the tester bench and Profile; operations staff move
+  between every admin section. No hidden tabs.
+- Profiles you control. Developers edit their display name, studio, contact email
+  and Google account email on a dedicated profile page; testers edit their display
+  name, Google account and region there too. The phone model is captured by
+  TesterLoop Mobile and shown read-only. The sign-in email stays fixed for security,
+  and the role badge in the header always shows which side you are on.
+- Tester bench. Testers see every project open to them, join as many as they like,
+  get a one-click Play testing link, and file reports with device and build
+  attached. Each project keeps its own 15-seat cap; there is no personal project
+  limit.
+- A redesigned Android tester app. TesterLoop Mobile 1.2.2 is the tester workspace
+  with a warm, calm interface and one clear place for everything: a home screen that
+  leads with the continuous-day count, the projects that need attention and recent
+  reports; a Joined/Open project list; campaign pages for the Play link, usage
+  evidence and reports; a report sheet with severity, title, build and the phone
+  model captured by the mobile app; and an editable profile. A bottom bar moves
+  between Home, Projects and Profile.
+- Mobile sessions that stay signed in. The app refreshes an expiring session before
+  using it, retries once if the server rejects a token, and only then asks the
+  tester to sign in again. The remembered email is prefilled next time; the
+  password is never stored.
+- Mobile install and usage evidence. After the tester grants Usage Access, the app
+  checks whether each joined project's package is installed, records one install
+  check per day for the life of each live project, records foreground time for that
+  package and syncs yesterday and today in the background. Install status is still
+  reported when Usage Access is off, and checks are kept locally until they upload.
+  Nothing outside joined project packages is tracked.
+- Mobile device type. TesterLoop Mobile reports the phone's manufacturer and model
+  automatically. Testers see it read-only on the Windows profile and workspace, and
+  desktop bug reports use it by default.
+- Google Group opens on join. Pressing Join adds the seat and launches the
+  project's Google Group page in the default browser, using the URL name operations
+  recorded for that group (`https://groups.google.com/g/<group-name>`), not a guess
+  from the email address.
+- Verified opt-in, not a tick box. After the tester allows Usage Access, pressing
+  Confirm opt-in asks the project's Google Group whether that tester's Google
+  address is an active member. Only a real membership confirms the seat, so the
+  eligibility clock counts testers who are genuinely in the group. A failed check
+  releases the seat so the tester can add their address and join again. Legacy
+  seats remain marked unverified until the tester confirms through the new check.
+- One Google identity per tester. The tester's Google account email is what gets
+  checked against the group, and it cannot be changed while that tester is opted
+  in - they must opt out first, so a confirmed seat always belongs to the address
+  that was checked.
+- Reports that reach the right developer. Severity, device, build and reproduction
+  notes land in the developer's queue instead of a chat thread.
+- Tester email privacy. Developers see a tester's display name, device, seat number
+  and opt-in state, but never the tester's email address; the full tester roster
+  stays with operations in TesterLoop Admin.
+- Roster report status. Each tester row in the developer roster shows Reported or
+  No report, so a quick scan shows who has filed feedback and who has not.
+- Honest start date. The project start date appears only once at least 12 testers
+  are actively opted in, which is exactly when the 14-day clock begins.
+- Separate operations app. TesterLoop Admin puts every new project in one queue;
+  staff confirm the payment, which reserves the exact group number, address and
+  display name. The group-setup queue shows the reserved identity with copy
+  actions, an Open group create page button, a five-item settings checklist and an
+  Issue next number control. After the group exists, operations attach the
+  reserved identity by hand. A left-hand menu moves between operations, close test
+  projects, developers, testers, feedback, payment packages, the audit trail and a
+  staff profile, so nothing is buried in one long screen. Selecting a developer or
+  a tester opens a dedicated detail page with that account's full history instead
+  of squeezing everything into a table row. The Feedback section opens a full
+  report page with the usage snapshot taken when the report was filed beside the
+  tester's current usage.
+- A full close test project page. Selecting a project in TesterLoop Admin opens the
+  whole run in one place: app and package, developer contact, live state, the exact
+  Google Group identity and settings confirmation, payment status, fee and
+  reference, the Play link, the 15-seat budget, reports, usage coverage and payouts.
+  Below it, a tester table shows seat number, opt-in state, usage progress, report
+  count and payout reference for every person on the project, and a project history
+  lists the audit entries recorded against that project.
+- Payment packages with real history. The admin page shows every package, its
+  project fee, tester payout, status and how many projects use it. A package that
+  has been used cannot be deleted, but it can be deactivated so it stops appearing
+  for new projects.
+- Feedback that stays visible. Success and error messages appear as compact
+  top-right toasts instead of blocking Windows dialogs, and destructive actions use
+  a styled in-app confirmation that matches the rest of the product. The app keeps
+  the reason for a failure visible where the action happened.
+- Payment status on every close test project. The admin close test project table
+  shows whether each project is paid or still owes the fee, using the same live
+  server data as the payment queue.
+- Editable operations profile. Staff set a display name and an internal note; the
+  signed-in email stays read-only so the account used for authorisation cannot
+  drift. The shell header updates as soon as the profile is saved.
+- Both Play link forms accepted. Developers can save a closed-test link
+  (`https://play.google.com/apps/testing/<package>`) or a Play store link
+  (`https://play.google.com/store/apps/details?id=<package>`). Anything that is not
+  HTTPS on `play.google.com` is rejected in the app and in the database.
+- A closed-test link that locks on the first join. Developers can correct the Play
+  link while no tester has joined; after the first join the link is fixed, so
+  testers are never pointed at a different app or test.
+- One dashboard read for operations. Close test projects, developer accounts,
+  tester accounts, tester feedback, payment packages, counts and the audit trail
+  arrive together, with no direct table access handed to the client. Tester,
+  developer and close test project detail pages load on demand through separate
+  admin-only server functions.
+- A payout ledger that matches the project rule. The tester fee comes from the
+  package chosen when the project was created and stays tied to a passed project
+  and a filed report, so operations can pay exactly what was earned and never pay a
+  seat that did not contribute. The fee amount is stored with the seat, keeping
+  historical payouts stable if the rate changes later.
+- Honest status. Play Console has no API for tester opt-in status and consumer
+  Google Groups have no Admin SDK to create or list groups; TesterLoop still has
+  operations create the group by hand, using Google's create page as a helper. It
+  confirms opt-in by checking direct group membership for that tester's address. It
+  never pretends to read Play Console opt-in status or to reconcile an entire group
+  roster.
+- Audit trail. Project created, package chosen, group attached, Play link saved,
+  tester joined - each step is written down, including verified opt-in events.
+
+Main benefits
+- No more guessing whether the 14-day clock is still running.
+- No more manual spreadsheets for seats, opt-ins and who is still in the group.
+- Fewer failed runs caused by one tester opting out on day 11.
+- A clean written trail of every seat, every opt-in and every report.
+- Sign in from any Windows PC and see the current state of the run, not a stale
+  spreadsheet.
+- Clear hand-offs: the app tells each side what to do next instead of leaving it in
+  an email thread.
+- One visible project charge with a reference the developer can quote and an
+  operations confirmation step, so payment and activation never drift apart.
+- Pricing that can change without rewriting history: operations define the packages
+  and developers pick one, while every existing project keeps the deal it was
+  created with.
+- A clean workspace. Projects you no longer need can be deleted, while a project
+  that already has a confirmed opt-in stays locked until its 14-day run is done.
+- Tester payouts that can be explained line by line: which project, which report,
+  what fee, which reference and when it was paid.
+- Fewer modal interruptions. Success is a calm toast, and only a destructive action
+  stops to ask for confirmation.
+
+Problems it solves
+- The 12-tester / 14-day rule is unforgiving and poorly surfaced in Play Console.
+- Consumer Google Groups have no public API; doing it by hand is error prone.
+  TesterLoop keeps the manual step in one accountable place with a queue and an
+  audit trail.
+- Testers churn. A failed Google Group check releases the seat immediately, so the
+  tester can fix access and join again without a stale membership blocking them.
+  The 15-tester lifetime limit keeps the payable roster predictable.
+- Feedback arrives in five different places and gets lost.
+- A paid service needs pricing that is simple for the developer and controlled by
+  operations. Packages make the offer explicit, while the campaign keeps the amounts
+  it was created with.
+- Paying testers by hand across dozens of projects is easy to get wrong. The admin
+  payout ledger shows the earned fee, the report that justifies it and the payment
+  reference in one place, so every tester is paid once and the record survives.
+
+==========================================================
+4. FACEBOOK PROMOTIONAL TEXT
+==========================================================
+
+Your Play app is ready. Google still says no.
+
+For most new personal developer accounts, publishing to production means keeping
+at least 12 testers opted in to a closed test for 14 continuous days - and one
+tester quietly leaving on day 11 sends you back to zero.
+
+TesterLoop takes that entire job off your hands.
+
+- Create your developer account in the Windows app, then create the project and
+  choose a payment package. The default Standard package is $15 with a $0.50 tester
+  payout, and operations can define other packages for different project tiers.
+- Pay the project fee quoting the reference shown in the app. Operations confirm it,
+  which reserves your exact group number, address and display name before anything
+  is created.
+- Our operations team opens Google's group creation page in one click, creates the
+  group by hand with the reserved address and display name, confirms its settings
+  and then attaches the reserved identity - no API tricks, no broken automation,
+  and no guessing which group belongs to your project.
+- Paste the attached group into Play Console, save your closed-test link, and the
+  project goes live for testers.
+- One screen shows opted-in testers, continuous days banked and seats used, so you
+  always know the exact day you can apply.
+- A project may use at most 15 testers in total, because every tester is paid. A
+  failed Google Group check releases the unconfirmed seat so the tester can fix
+  membership and rejoin.
+- Testers create their own account, join from their bench, and the app opens the
+  project's Google Group page for them so they can request access. They then open
+  the Play testing page in one click. After allowing Usage Access, they press
+  Confirm opt-in in TesterLoop Mobile, which checks that their Google address is
+  really in the group before the seat counts, and they file bug reports with device
+  and build attached.
+- Our operations team uses a separate TesterLoop Admin app with a left-hand menu -
+  the payment queue, reserved group identities waiting to be created, an Open group
+  create page button, a five-item settings checklist, close test projects,
+  developers, testers, feedback, payment packages, the audit trail and a staff
+  profile - so every hand-off has one accountable place. After the group exists,
+  operations attach the reserved identity by hand.
+- Pricing lives in one admin page. Every package has a project fee, a tester payout
+  and a status; developers see only the active ones. A project keeps the amounts it
+  was created with, so changing a package later never changes an existing deal.
+- Testers are paid for real work. Each tester earns the project's copied tester
+  payout once the project passes and they have filed a report. Operations see every
+  project, report, payout and mobile usage summary on that tester's own detail page,
+  then record the payment with its reference in one action. No side spreadsheet,
+  and no paying a seat twice.
+- Usage evidence beside the payout. Each tester project row shows installed status,
+  continuous days used against the 14-day requirement, and the last usage date, so
+  operations can understand whether the tester is actually running the app. Every
+  bug report also keeps the usage state captured when it was filed, and the admin
+  report page shows that snapshot beside the tester's current usage.
+- Clean up old projects. A developer can delete a project they no longer need, but
+  once a tester confirms opt-in the project locks until the 14-day run finishes, so
+  an active test cannot be pulled out from under its testers.
+- Less interruption. Success and error messages appear as compact toasts, and only
+  destructive actions use a confirmation dialog.
+
+Built as a proper Windows app for both 32-bit and 64-bit machines. Installing is a
+double-click; running a closed test is now one screen.
+
+Stop babysitting a spreadsheet. Let the loop run itself.
+
+Download TesterLoop and start your next closed test today.
+
+==========================================================
+5. SOCIAL MEDIA TAGS
+==========================================================
+
+#TesterLoop
+#TesterLoopAdmin
+#GooglePlay
+#ClosedTesting
+#AndroidDev
+#IndieDev
+#AppTesting
+#PlayConsole
+#GoogleGroups
+#ManualGroupSetup
+#GroupIdentityReservation
+#GooglePlayTesting
+#PlayStore
+#MobileTesting
+#QAtesting
+#AndroidDevelopers
+#AppLaunch
+#BetaTesting
+#14DayRule
+#WindowsApp
+#AppTesters
+#GoogleGroupVerification
+#VerifiedOptIn
+#TesterPayouts
+#FairPayForTesters
+#TestingOperations
+#PaymentPackages
+#ProjectPricing
+#InAppNotifications
+#CleanWorkspace
+#Supabase
+#AndroidApp
+#UsageStats
+#TesterApp
+
+==========================================================
+6. AI IMAGE PROMPTS
+==========================================================
+
+1. A tidy Windows desktop workspace at dusk: a dark navy sidebar, a light
+   developer panel showing a "New project" form with a payment package selector
+   opened to reveal "Standard - $15.00 project fee - $0.50 tester payout", beside
+   fifteen seat tiles with twelve filled green and three outlined. A compact project
+   card reads "Payment confirmed" with a TL reference. Soft indigo accent lighting,
+   realistic UI screenshot style, accurate short labels, 16:9.
+
+2. Close-up of an indigo rounded-square app icon with a white loop and check mark,
+   resting on a matte desk beside a laptop showing an operations report detail page.
+   The page pairs "Usage when filed" with "Current usage" cards, each reading
+   "Installed" and "9/14 days", under a report titled with a calm severity and
+   status badge. A small amber package-warning banner is visible but subdued. Clean
+   studio lighting, subtle shadow, product photography, high detail.
+
+3. A split hand-off scene: on the left, an operations specialist works in a clean
+   admin app whose left menu lists Operations, Close Test Projects, Developers,
+   Testers, Feedback, Payment Packages, Audit Trail and Profile. The Operations
+   screen shows a payment queue and a reserved group identity with an address,
+   display name, an "Open group create page" button and a five-item settings
+   checklist. On the right, a developer's laptop shows the same project and its TL
+   reference ready to copy. Morning light, calm focused mood, editorial tech
+   photography, shallow depth of field.
+
+4. A stylised diagram of a circular loop made of twelve small glowing dots with
+   three extra dots standing by, forming a ring around a check mark. A small group
+   icon sits on the ring with a hand-placed pin and a small numeric marker,
+   suggesting a deliberately reserved manual setup. A subtle side panel shows
+   "Project fee" and "Tester payout" as two paired values. Deep indigo gradient
+   background, minimal 3D render, soft glow, plenty of negative space.
+
+5. A tester holding a phone with a Play testing page open, beside a floating
+   translucent panel that shows a group membership check turning green
+   ("verified member", "opt-in confirmed") plus a project card with a tester payout
+   line. A small toast reads "Google Group membership confirmed." Warm modern colour
+   grade, lifestyle tech photography, shallow focus, social-media friendly.
+
+==========================================================
+NOTES FOR THE DESIGNER
+==========================================================
+
+- Logo master: media/logos/testerloop-logo-1024.png
+- Icons: media/icons/testerloop-icon-512.png, -256.png, -114.png, testerloop.ico
+- Palette: indigo #4F46E5, deep rail #0E1526, canvas #F5F6F8, success #0E9F6E,
+  warning #B45309, danger #DC2626.
+- Typography: Segoe UI Variable for interface, Cascadia Mono for addresses.
+- Accounts and data: Supabase-backed email/password sign-in; no Google or social
+  sign-in is offered in 0.14.1 desktop or 1.2.2 Android. One account can choose
+  Developer or Tester at sign-in, and the missing profile is created server-side on
+  first use. TesterLoop Admin is a separate install with its own stable x86/x64
+  installers, a left-hand menu, per-tester, per-developer and per-project detail
+  pages, a Payment Packages page and an editable admin profile.
+- Notifications: show success and error messages as compact top-right toasts. Show
+  destructive confirmations as a centred in-app dialog, not a Windows message box.
+- Android app: tester workspace only, package `com.testerloop.app`, source in
+  `mobile/`. A developer account can also use it as a tester; operations accounts
+  are refused. It can show install status and daily usage for joined campaign
+  packages after the tester grants Usage Access. Do not depict whole-device
+  monitoring, automatic Play opt-in, or automatic payment.
+- Android design: warm light palette - page #F7F4ED, surface #FFFDF8, warm panel
+  #F1ECE1, ink #12211E, teal #0F766E, coral #EA580C - 22dp rounded cards with a
+  1dp border and no elevation, 52dp primary buttons, Plus Jakarta Sans type.
+  Promotional phone mockups should match that calm, paper-warm look rather than the
+  indigo Windows shell.
+- Pricing: the default Standard package is $15.00 with a $0.50 tester payout.
+  Operations may create other packages with their own amounts. A project keeps the
+  package amounts chosen when it was created. Do not depict automatic card
+  processing, a built-in checkout, an external payment gateway or automatic tester
+  payouts; show the reference, the status and the staff confirmation instead.
+- Opt-in verification: one tester at a time is checked against that project's
+  Google Group, through the app's server side. A confirmed seat may be shown as
+  "verified member" or "opt-in confirmed". Do not depict a full group roster being
+  synced, automatic group creation, or a Play Console opt-in read.
+- Groups are still created by operations staff; marketing must not claim the app
+  creates or verifies groups or reconciles a whole roster. The app reserves and
+  displays the identity operations must use, opens Google's create page, then
+  operations attach the new group by hand.

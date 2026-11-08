@@ -38,7 +38,7 @@ sign-in, and TesterLoop Admin has no public signup.
 | UI framework | WPF on .NET 8 (`net8.0-windows`) | x86 and x64 are both first-class; self-contained publish has no WebView2 or Chromium dependency, which matters for the old 32-bit machines x86 exists for |
 | Why not Electron | rejected | Electron 44 (Aug 2026) removed Windows ia32 builds; v43 support ends Jan 2027 |
 | Applications | `TesterLoop` for developers/testers; `TesterLoop Admin` for operations | Separate processes and installers; the admin workspace is not exposed inside the main app |
-| Mobile app | Kotlin + Jetpack Compose in `mobile/`, package `com.testerloop.app` | Tester-only Android client for the phone that runs the app under test; shares the same Supabase auth, RPCs and Edge Function as the desktop apps |
+| Mobile app | Kotlin + Jetpack Compose in `mobile/`, package `lk.closetester.helper` | Tester-only Android client for the phone that runs the app under test; shares the same Supabase auth, RPCs and Edge Function as the desktop apps; distributed through Google Play, which owns updates |
 | Shared code | `TesterLoop.Shared` WPF library | Supabase transport, account models, tokens, controls and shell chrome are shared; role-specific views stay in each app |
 | Data store | Supabase (Postgres + Auth + RLS) | Requested by the owner. Desktop clients hold a public anon key, so authorisation must live in RLS, never in the client |
 | Server tier | Supabase Edge Functions | Google Workspace service-account credentials must never ship inside a desktop binary |
@@ -4403,3 +4403,67 @@ Date: 2026-11-08
 - Security: no secrets, endpoints or grants were added. The updater still only
   installs through the system package installer after the user confirms, and the
   manifest-derived APK name is validated before it is used.
+
+### Modification 061
+
+Date: 2026-11-08
+
+#### Changes
+- Removed the Git/GitHub in-app update feature from TesterLoop Mobile because the
+  app is now distributed through Google Play, which owns updates.
+  - Deleted `core/AppUpdater.kt` and `ui/AppVm.Update.kt`.
+  - Removed the Profile `App update` card, the `update*` `UiState` fields and the
+    `UiEvent.OpenInstallPermission` event.
+  - Removed `REQUEST_INSTALL_PACKAGES`, the FileProvider provider and
+    `res/xml/file_paths.xml`.
+  - Removed `GITHUB_*` and `UPDATE_*` constants from `AppConfig`.
+  - Deleted `release/mobile-version.json`; no release manifest is published any
+    more.
+- Renamed the Android application id and Kotlin package from `com.testerloop.app`
+  to `lk.closetester.helper` (namespace, applicationId, source tree and all
+  imports). This is a new Play listing identity; it is not an update to an app
+  previously uploaded under the old id.
+- Android bumped to `1.2.6` (`versionCode 10206`). Windows stays at `0.15.2`.
+- The upload keystore and release signing config are unchanged.
+
+#### Files / Components
+- Removed: `mobile/app/src/main/kotlin/com/testerloop/app/core/AppUpdater.kt`,
+  `ui/AppVm.Update.kt`, `mobile/app/src/main/res/xml/file_paths.xml`,
+  `release/mobile-version.json`
+- Moved: `mobile/app/src/main/kotlin/com/testerloop/app/` ->
+  `mobile/app/src/main/kotlin/lk/closetester/helper/`
+- `mobile/app/build.gradle.kts`, `mobile/app/src/main/AndroidManifest.xml`
+- `mobile/app/src/main/kotlin/lk/closetester/helper/core/AppConfig.kt`,
+  `ui/UiState.kt`, `ui/AppVm.kt`, `ui/AppVm.Auth.kt`,
+  `ui/profile/ProfileScreen.kt`, `MainActivity.kt`
+- `release/TesterLoop-Mobile-1.2.6.apk`, `release/TesterLoop-Mobile-1.2.6.aab`
+- `build/android/TesterLoop-Mobile-1.2.6-debug.apk`,
+  `build/android/TesterLoop-Mobile-1.2.6-release.apk`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Devices still running 1.2.5 or older keep the old updater code until they are
+  replaced by the Play build; the new build neither checks GitHub nor requests
+  install permission.
+- Verification: clean `:app:assembleDebug`, `:app:assembleRelease`,
+  `:app:bundleRelease` and `:app:lintDebug` succeed; lint reports 0 errors and 11
+  warnings (dependency/deprecation only). `aapt` reports package
+  `lk.closetester.helper`, `versionCode 10206`, `versionName 1.2.6`,
+  `minSdk 24`, `targetSdk 36`; `apksigner` confirms the existing upload
+  certificate (SHA-256
+  `12f8382ff7f25781a718d438df51eb740858635a42c4e7d3fe3bc4fba3a84fd5`) and
+  `jarsigner -verify` exits 0 for the AAB. The permission dump no longer lists
+  `REQUEST_INSTALL_PACKAGES`.
+- Artifacts: `build/android/TesterLoop-Mobile-1.2.6-debug.apk` 18,863,915 bytes,
+  `build/android/TesterLoop-Mobile-1.2.6-release.apk` 13,027,140 bytes,
+  `release/TesterLoop-Mobile-1.2.6.apk` 13,027,140 bytes and
+  `release/TesterLoop-Mobile-1.2.6.aab` 12,716,345 bytes. The superseded 1.2.5
+  artifacts and `mobile-version.json` were removed.
+- Not verified on a device: sign-in, join, opt-in, reports and usage sync under
+  the new package id. No Android device or accelerated emulator is available.
+- Security: the removal deletes the download-and-install surface (no
+  `REQUEST_INSTALL_PACKAGES`, no FileProvider, no GitHub polling). The only
+  network endpoints left are Supabase and the two validated Google links. No
+  secrets changed; the upload keystore stays outside git.
+- Still owed from earlier rounds: migrations `032`-`034` and the QA purge in
+  `sql/maintenance/purge_test_accounts.sql`.

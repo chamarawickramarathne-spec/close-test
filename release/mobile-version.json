@@ -1,6 +1,0 @@
-{
-  "versionCode": 10205,
-  "versionName": "1.2.5",
-  "apk": "TesterLoop-Mobile-1.2.5.apk",
-  "notes": "Update checks now use the release download page with retries, so a busy update server no longer blocks the update."
-}

@@ -1554,3 +1554,27 @@ Pending:
 - Install `1.2.5` once on a device; older clients keep the old updater until then.
 - Device-verify the retry path and manifest-first check; no device or accelerated
   emulator is available here.
+
+## Release 1.2.6 Android - Play distribution and package rename (2026-11-08)
+
+Completed:
+- Removed the GitHub in-app updater from TesterLoop Mobile because Google Play now
+  owns updates: deleted `AppUpdater.kt`, `AppVm.Update.kt`, the Profile update card,
+  the update `UiState` fields, `REQUEST_INSTALL_PACKAGES`, the FileProvider and
+  `res/xml/file_paths.xml`, and deleted `release/mobile-version.json`.
+- Renamed the Android application id and Kotlin package from `com.testerloop.app`
+  to `lk.closetester.helper` (namespace, applicationId, source tree, all imports).
+- Android bumped to `1.2.6` (`versionCode 10206`). Windows stays at `0.15.2`.
+- Clean build of `assembleDebug`, `assembleRelease`, `bundleRelease` and
+  `lintDebug` succeeded; lint reports 0 errors and 11 warnings.
+- Artifacts: `release/TesterLoop-Mobile-1.2.6.apk` and
+  `release/TesterLoop-Mobile-1.2.6.aab` (Play upload), plus debug/release APKs in
+  `build/android`. Signed with the existing upload keystore; superseded 1.2.5
+  artifacts were removed.
+
+Pending:
+- Upload `release/TesterLoop-Mobile-1.2.6.aab` to Google Play (new app identity
+  `lk.closetester.helper`).
+- Device-verify sign-in, join, opt-in, reports and usage sync under the new
+  package id; no device or accelerated emulator is available here.
+- Apply migrations `032`-`034` and run the QA purge.

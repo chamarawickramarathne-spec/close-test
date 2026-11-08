@@ -14,15 +14,15 @@ if (keystorePropsFile.exists()) {
 }
 
 android {
-    namespace = "com.testerloop.app"
+    namespace = "lk.closetester.helper"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.testerloop.app"
+        applicationId = "lk.closetester.helper"
         minSdk = 24
         targetSdk = 36
-        versionCode = 10205
-        versionName = "1.2.5"
+        versionCode = 10206
+        versionName = "1.2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

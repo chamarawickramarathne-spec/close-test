@@ -4946,7 +4946,16 @@ Date: 2026-11-08
   stay responsive and were stopped after the check.
 - `build/desktop-version.json` lists version `0.17.1`, the four stable asset
   names and their SHA-256 hashes; every hash matches the compiled installer.
-- Not verified live: the manifest download and the install hand-off, because the
-  `0.17.1` release and its manifest are not published yet. No secrets or
-  endpoints were added; the updater reads a public GitHub release.
+- Released `desktop-v0.17.1`: commit `600dd0a`, tag `desktop-v0.17.1`, all four
+  installers and `desktop-version.json` attached. The five stable
+  `releases/latest/download/...` URLs return HTTP 200, the remote manifest matches
+  the local file byte for byte, and every GitHub asset digest matches the manifest.
+- Operational rule: `releases/latest` drives the updater, so any future release
+  that does not contain `desktop-version.json` must be published as a pre-release.
+  Otherwise `latest` moves away from the desktop release and the updater sees a
+  404.
+- Not verified live: the in-app download and install hand-off, because no signed-in
+  desktop session was driven this round. The release URLs and manifest were
+  verified directly. No secrets or endpoints were added; the updater reads a public
+  GitHub release.
 

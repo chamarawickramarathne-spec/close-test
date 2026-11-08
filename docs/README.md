@@ -40,6 +40,9 @@ Any change to a file in `docs/` goes live on the next push.
   installers. The Windows in-app updater reads
   `releases/latest/download/desktop-version.json`, so a release without it cannot
   be discovered automatically.
+- `releases/latest` must stay on a desktop release. Publish any non-desktop
+  GitHub release as a pre-release, otherwise `latest` moves away and the updater
+  receives a 404.
 - Confirm the fee text is `$15` and that the Refund Policy matches what you will
   honour.
 - If you later add a real Play Store listing, add that link; do not invent one.

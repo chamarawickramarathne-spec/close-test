@@ -1692,13 +1692,17 @@ Completed:
 - Built, published and packaged `0.17.1` for both Windows apps and both
   architectures; all four installers report product version `0.17.1`, and all
   four executable hashes match the manifest.
+- Published GitHub release `desktop-v0.17.1` with the four installers and
+  `desktop-version.json`. The five stable `releases/latest/download/...` URLs
+  return HTTP 200 and the remote manifest matches the local file.
 
 Pending:
 - Owner: run `sql/migrations/036_free_access.sql` if not already applied.
-- Publish GitHub release `desktop-v0.17.1` with the four installers and
-  `desktop-version.json`, then confirm the stable URLs return HTTP 200.
 - Install `0.17.1` by hand once; only `0.17.1` and later can use the updater.
 - Live verification of the update check and install hand-off against the
   published release.
+- Keep `desktop-version.json` in every normal GitHub release, or publish any
+  non-desktop release as a pre-release, so `releases/latest` stays on the
+  desktop release.
 - Still owed: migrations `032`-`034` (and earlier unapplied ones) plus the QA
   purge in `sql/maintenance/purge_test_accounts.sql`.

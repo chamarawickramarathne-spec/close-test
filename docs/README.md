@@ -32,9 +32,14 @@ Any change to a file in `docs/` goes live on the next push.
 
 - Support email is `primesentinel.kandy@gmail.com` on every page. Lemon Squeezy
   and customers both use it; change it in all four HTML files if it ever moves.
-- Confirm the download section and footer link point at the current desktop
-  release tag (`https://github.com/chamarawickramarathne-spec/close-test/releases/tag/desktop-v0.16.0`).
-  Update those links in `index.html` when a new desktop version is published.
+- Confirm the download section and footer link use the stable `releases/latest`
+  paths (`https://github.com/chamarawickramarathne-spec/close-test/releases/latest`
+  and `.../releases/latest/download/TesterLoop-Setup-x64.exe`). They never need a
+  version bump.
+- Every desktop release must attach `desktop-version.json` beside the four
+  installers. The Windows in-app updater reads
+  `releases/latest/download/desktop-version.json`, so a release without it cannot
+  be discovered automatically.
 - Confirm the fee text is `$15` and that the Refund Policy matches what you will
   honour.
 - If you later add a real Play Store listing, add that link; do not invent one.

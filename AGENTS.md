@@ -4878,3 +4878,75 @@ Date: 2026-11-08
   amount and identity are server-controlled, so a tampered client cannot price or
   reserve a project itself.
 
+### Modification 069
+
+Date: 2026-11-08
+
+#### Changes
+- Added a stable desktop updater to both Windows apps. Each app checks a small
+  release manifest, compares its own version, downloads the matching
+  architecture installer, verifies its SHA-256 and launches it.
+- The update URL never contains a version:
+  `https://github.com/chamarawickramarathne-spec/close-test/releases/latest/download/desktop-version.json`
+  and the installer links use `releases/latest/download/<asset>`. A new release
+  replaces the assets behind the same names.
+- Added `UpdateProduct`, `UpdateInfo`, `UpdateManifest`, `UpdateInstaller`,
+  `UpdateService` and `UpdateCoordinator` in `TesterLoop.Shared/Core`.
+- Added a `Check for updates` action and status line to the shared shell header,
+  available to both desktop and admin sessions. The app checks once on startup
+  after the workspace loads; a manual check reports "You are on the latest
+  version." when there is nothing new.
+- The coordinator shows `Install update X` when a newer version is found, then
+  downloads with SHA-256 verification and starts the installer through the
+  operating system, closing the running app first. Failed launches leave the app
+  open and show the reason.
+- `AppConfig` gained `UpdateManifestUrl`, `UpdateDownloadBase` and
+  `ReleasesPageUrl`; version bumped to `0.17.1`.
+- `scripts/build-installers.ps1` now writes `build/desktop-version.json` with the
+  version, four stable asset names and their SHA-256 values after both installers
+  compile.
+- `docs/index.html` and `docs/README.md` now use the stable
+  `releases/latest/download/...` links, so the download page never needs a version
+  edit.
+- Version bumped to `0.17.1` in `AppConfig`, both projects and both installers.
+
+#### Files / Components
+- `src/TesterLoop.Shared/Core/UpdateProduct.cs`,
+  `UpdateInfo.cs`, `UpdateManifest.cs`, `UpdateInstaller.cs`,
+  `UpdateService.cs`, `UpdateCoordinator.cs` (new)
+- `src/TesterLoop.Shared/Views/ShellView.xaml`
+- `src/TesterLoop.Desktop/ViewModels/ShellViewModel.cs`,
+  `src/TesterLoop.Admin/ViewModels/AdminShellViewModel.cs`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `scripts/build-installers.ps1`
+- `docs/index.html`, `docs/README.md`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- The updater accepts only `https`, a GitHub-hosted installer name matching
+  `TesterLoop-Setup-*` or `TesterLoop-Admin-Setup-*`, and a 64-character SHA-256.
+  A manifest entry that does not match is ignored rather than launched.
+- Architecture is selected from the running process, so an x86 install receives
+  the x86 installer and an x64 install receives the x64 installer.
+- The startup check is quiet: a missing manifest, offline machine or transient
+  failure does not interrupt the workspace. A manual check always reports a
+  result.
+- The first updater build must be installed by hand; only releases at or above
+  `0.17.1` can use the updater.
+- Build and packaging: `dotnet build TesterLoop.sln -c Release` 0 warnings /
+  0 errors. All four installers compiled and report product version `0.17.1`:
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,184,104 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,074,185 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,122,064 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,996,060 bytes
+  The four published executables report file version `0.17.1.0`; all four start,
+  stay responsive and were stopped after the check.
+- `build/desktop-version.json` lists version `0.17.1`, the four stable asset
+  names and their SHA-256 hashes; every hash matches the compiled installer.
+- Not verified live: the manifest download and the install hand-off, because the
+  `0.17.1` release and its manifest are not published yet. No secrets or
+  endpoints were added; the updater reads a public GitHub release.
+

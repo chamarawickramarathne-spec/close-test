@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Net.Http;
+using System.Windows;
 using TesterLoop.Desktop.Core;
 using TesterLoop.Desktop.Core.Data;
 using TesterLoop.Desktop.Core.Models;
@@ -19,6 +20,9 @@ public sealed class ShellViewModel : ObservableObject
         _service = service;
         _onSignOut = onSignOut;
         Notifications = new NotificationCenter();
+        Updates = new UpdateCoordinator(
+            UpdateProduct.Desktop,
+            () => Application.Current?.Shutdown());
         SignOutCommand = new AsyncRelayCommand(SignOutAsync);
 
         View = account.Role switch
@@ -39,6 +43,8 @@ public sealed class ShellViewModel : ObservableObject
     public object View { get; }
 
     public NotificationCenter Notifications { get; }
+
+    public UpdateCoordinator Updates { get; }
 
     public ObservableCollection<NavigationItem> NavItems { get; } = [];
 
@@ -113,6 +119,8 @@ public sealed class ShellViewModel : ObservableObject
                 await tester.LoadAsync();
                 break;
         }
+
+        _ = Updates.CheckOnStartupAsync();
     }
 
     private void BuildNavigation()

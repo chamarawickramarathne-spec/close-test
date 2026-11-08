@@ -1,6 +1,6 @@
 TESTERLOOP - MEDIA & MARKETING SUPPORT
 Last updated: 2026-11-08
-Application version: 0.17.0 desktop (Windows x86 / x64, main app + admin app)
+Application version: 0.17.1 desktop (Windows x86 / x64, main app + admin app)
                    1.2.6 Android tester app (signed APK + AAB)
 
 ==========================================================
@@ -200,6 +200,12 @@ Main features
   distributed through Google Play, so Play handles updates on the tester's phone.
   The app does not download or install updates itself and asks for no install
   permission.
+- Built-in Windows updates. Both desktop apps check a small release manifest,
+  compare the installed version, download the installer that matches the running
+  architecture, verify its SHA-256 and launch it. The download links use one
+  stable `releases/latest/download/...` address, so a new release never changes
+  the update URL. Startup checks stay quiet; the shell header offers a manual
+  check and an install action.
 - Google Group opens on join. Pressing Join adds the seat and launches the
   project's Google Group page in the default browser, using the URL name operations
   recorded for that group (`https://groups.google.com/g/<group-name>`), not a guess
@@ -307,6 +313,9 @@ Main benefits
   what fee, which reference and when it was paid.
 - Fewer modal interruptions. Success is a calm toast, and only a destructive action
   stops to ask for confirmation.
+- Updates that do not need a new download page. The apps read one stable release
+  manifest, pick the correct 32-bit or 64-bit installer and verify it before
+  launching, so an installed copy can move to the next version from inside the app.
 
 Problems it solves
 - The 12-tester / 14-day rule is unforgiving and poorly surfaced in Play Console.
@@ -385,8 +394,10 @@ TesterLoop takes that entire job off your hands.
 - Less interruption. Success and error messages appear as compact toasts, and only
   destructive actions use a confirmation dialog.
 
-Built as a proper Windows app for both 32-bit and 64-bit machines. Installing is a
-double-click; running a closed test is now one screen.
+Built as a proper Windows app for both 32-bit and 64-bit machines, with a built-in
+update check that reads one stable release manifest, downloads the matching
+installer, verifies its SHA-256 and launches it. Installing is a double-click;
+running a closed test is now one screen.
 
 Stop babysitting a spreadsheet. Let the loop run itself.
 
@@ -430,6 +441,8 @@ Download TesterLoop and start your next closed test today.
 #AndroidApp
 #UsageStats
 #TesterApp
+#DesktopUpdates
+#SoftwareUpdates
 
 ==========================================================
 6. AI IMAGE PROMPTS
@@ -439,8 +452,9 @@ Download TesterLoop and start your next closed test today.
    developer panel showing a "New project" form with a payment package selector
    opened to reveal "Standard - $15.00 project fee - $0.50 tester payout", beside
    fifteen seat tiles with twelve filled green and three outlined. A compact project
-   card reads "Free access active" with a TL reference. Soft indigo accent lighting,
-   realistic UI screenshot style, accurate short labels, 16:9.
+   card reads "Free access active" with a TL reference, and the app header shows a
+   quiet "Check for updates" action beside the signed-in account. Soft indigo accent
+   lighting, realistic UI screenshot style, accurate short labels, 16:9.
 
 2. Close-up of an indigo rounded-square app icon with a white loop and check mark,
    resting on a matte desk beside a laptop showing an operations report detail page.
@@ -481,7 +495,7 @@ NOTES FOR THE DESIGNER
   warning #B45309, danger #DC2626.
 - Typography: Segoe UI Variable for interface, Cascadia Mono for addresses.
 - Accounts and data: Supabase-backed email/password sign-in; no Google or social
-  sign-in is offered in 0.17.0 desktop or 1.2.6 Android. One account can choose
+  sign-in is offered in 0.17.1 desktop or 1.2.6 Android. One account can choose
   Developer or Tester at sign-in, and the missing profile is created server-side on
   first use. TesterLoop Admin is a separate install with its own stable x86/x64
   installers, a left-hand menu, per-tester, per-developer and per-project detail

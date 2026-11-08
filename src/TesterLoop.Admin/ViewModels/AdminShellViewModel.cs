@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Net.Http;
+using System.Windows;
 using TesterLoop.Desktop.Core;
 using TesterLoop.Desktop.Core.Data;
 using TesterLoop.Desktop.Core.Models;
@@ -21,6 +22,9 @@ public sealed class AdminShellViewModel : ObservableObject
         _service = service;
         _onSignOut = onSignOut;
         Notifications = new NotificationCenter();
+        Updates = new UpdateCoordinator(
+            UpdateProduct.Admin,
+            () => Application.Current?.Shutdown());
         View = new AdminViewModel(service, Notifications);
         View.ProfileSaved += OnProfileSaved;
         SignOutCommand = new AsyncRelayCommand(SignOutAsync);
@@ -41,6 +45,8 @@ public sealed class AdminShellViewModel : ObservableObject
     public AdminViewModel View { get; }
 
     public NotificationCenter Notifications { get; }
+
+    public UpdateCoordinator Updates { get; }
 
     public ObservableCollection<NavigationItem> NavItems { get; } = [];
 
@@ -88,7 +94,11 @@ public sealed class AdminShellViewModel : ObservableObject
 
     public string VersionLabel => $"v{AppConfig.AppVersion}";
 
-    public Task InitializeAsync() => View.LoadAsync();
+    public async Task InitializeAsync()
+    {
+        await View.LoadAsync();
+        _ = Updates.CheckOnStartupAsync();
+    }
 
     private void Select(int index)
     {

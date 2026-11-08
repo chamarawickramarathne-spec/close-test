@@ -4,7 +4,16 @@ public static class AppConfig
 {
     public const string SupabaseUrl = "https://omlhddzyitzjbcgrxvbn.supabase.co";
     public const string SupabasePublishableKey = "sb_publishable_muvojumpOQ52sZirZKA4Lw_6BcNVb8G";
-    public const string AppVersion = "0.17.0";
+    public const string AppVersion = "0.17.1";
+
+    public const string UpdateManifestUrl =
+        "https://github.com/chamarawickramarathne-spec/close-test/releases/latest/download/desktop-version.json";
+
+    public const string UpdateDownloadBase =
+        "https://github.com/chamarawickramarathne-spec/close-test/releases/latest/download/";
+
+    public const string ReleasesPageUrl =
+        "https://github.com/chamarawickramarathne-spec/close-test/releases/latest";
 
     public const int SeatCap = 15;
     public const int RequiredDays = 14;

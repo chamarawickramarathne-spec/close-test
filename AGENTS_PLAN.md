@@ -1675,4 +1675,30 @@ Pending:
 - The Lemon Squeezy checkout code stays in the repository but is no longer
   reachable from the desktop app, so the `LS_*` go-live steps are optional while
   free access is in effect.
+## Stable desktop updater (2026-11-08)
 
+Completed:
+- Added `UpdateProduct`, `UpdateInfo`, `UpdateManifest`, `UpdateInstaller`,
+  `UpdateService` and `UpdateCoordinator` to `TesterLoop.Shared`.
+- Both apps check the stable manifest
+  `releases/latest/download/desktop-version.json`, select the installer for
+  the running architecture, verify SHA-256 and launch the installer.
+- Shared shell header has `Check for updates` / `Install update` plus a status
+  line; startup checks are quiet and manual checks always report a result.
+- `scripts/build-installers.ps1` writes `build/desktop-version.json` with the
+  version, four stable asset names and their SHA-256 hashes.
+- `docs/index.html` and `docs/README.md` use `releases/latest/download/...` so
+  links never need a version edit.
+- Built, published and packaged `0.17.1` for both Windows apps and both
+  architectures; all four installers report product version `0.17.1`, and all
+  four executable hashes match the manifest.
+
+Pending:
+- Owner: run `sql/migrations/036_free_access.sql` if not already applied.
+- Publish GitHub release `desktop-v0.17.1` with the four installers and
+  `desktop-version.json`, then confirm the stable URLs return HTTP 200.
+- Install `0.17.1` by hand once; only `0.17.1` and later can use the updater.
+- Live verification of the update check and install hand-off against the
+  published release.
+- Still owed: migrations `032`-`034` (and earlier unapplied ones) plus the QA
+  purge in `sql/maintenance/purge_test_accounts.sql`.

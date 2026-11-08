@@ -48,3 +48,43 @@ foreach ($arch in @("x86", "x64")) {
         Write-Host "Installer written to $($build.Output -f $arch)"
     }
 }
+
+$appConfigPath = Join-Path $root "src\TesterLoop.Shared\Core\AppConfig.cs"
+$appConfig = [System.IO.File]::ReadAllText($appConfigPath)
+if ($appConfig -notmatch 'AppVersion\s*=\s*"([0-9.]+)"') {
+    throw "Could not read AppVersion from $appConfigPath"
+}
+$version = $Matches[1]
+
+function Get-InstallerHash {
+    param([string]$RelativePath)
+
+    $path = Join-Path $root $RelativePath
+    if (-not (Test-Path $path)) {
+        throw "Missing installer for update manifest: $path"
+    }
+
+    return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+$manifest = [ordered]@{
+    version           = $version
+    desktop_x86       = "TesterLoop-Setup-x86.exe"
+    desktop_x64       = "TesterLoop-Setup-x64.exe"
+    admin_x86         = "TesterLoop-Admin-Setup-x86.exe"
+    admin_x64         = "TesterLoop-Admin-Setup-x64.exe"
+    sha256_desktop_x86 = Get-InstallerHash "build\win-x86\TesterLoop-Setup-x86.exe"
+    sha256_desktop_x64 = Get-InstallerHash "build\win-x64\TesterLoop-Setup-x64.exe"
+    sha256_admin_x86   = Get-InstallerHash "build\admin-win-x86\TesterLoop-Admin-Setup-x86.exe"
+    sha256_admin_x64   = Get-InstallerHash "build\admin-win-x64\TesterLoop-Admin-Setup-x64.exe"
+}
+
+$manifestPath = Join-Path $root "build\desktop-version.json"
+$manifestJson = ($manifest | ConvertTo-Json) + "`r`n"
+[System.IO.File]::WriteAllText(
+    $manifestPath,
+    $manifestJson,
+    (New-Object System.Text.UTF8Encoding($false)))
+
+Write-Host "Update manifest written to $manifestPath (version $version)."
+

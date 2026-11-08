@@ -30,9 +30,8 @@ Any change to a file in `docs/` goes live on the next push.
 
 ## Before you submit a payment application
 
-- **Replace the placeholder email.** Every page uses
-  `support@testerloop.dev`. Search `docs/` and replace it with an address you
-  actually read. Lemon Squeezy and customers both use it.
+- Support email is `primesentinel.kandy@gmail.com` on every page. Lemon Squeezy
+  and customers both use it; change it in all four HTML files if it ever moves.
 - Confirm the download button points at
   `https://github.com/chamarawickramarathne-spec/close-test/releases`.
 - Confirm the fee text is `$15` and that the Refund Policy matches what you will

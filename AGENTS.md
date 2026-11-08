@@ -4638,9 +4638,8 @@ Date: 2026-11-08
 - Every file in `docs/` is ASCII-only with no BOM, so it cannot be corrupted by a
   Windows editor. The site uses no JavaScript, cookies, analytics, CDN fonts or
   third-party scripts.
-- The contact address `support@testerloop.dev` is a **placeholder** on every
-  page. It must be replaced with an address the owner monitors before the site is
-  submitted to Lemon Squeezy. This is recorded in `docs/README.md`.
+- The contact address was a placeholder in Modification 063 and was replaced with
+  `primesentinel.kandy@gmail.com` in Modification 065.
 - The hero image is a CSS mock, not a real screenshot. Real desktop and Android
   screenshots are still outstanding (global AGENTS.md section 10).
 - Pages publishing is owner-run; the agent cannot enable it or verify the live
@@ -4648,3 +4647,57 @@ Date: 2026-11-08
   balanced-tag checks on all four HTML files.
 - Lemon Squeezy signup, activation, secrets, Edge deploys, webhook registration
   and `035` remain owner-run. No secret is stored in the site or the repo.
+
+### Modification 064
+
+Date: 2026-11-08
+
+#### Changes
+- Added `PAYMENT_SETUP.md` at the repository root: a checkbox go-live checklist
+  with the real Lemon Squeezy identifiers filled in (Store ID `518607`, Variant
+  ID `2351612`), the webhook URL, the migration order `032`-`035`, the JWT-on /
+  JWT-off deploy pair, test-mode and live-mode steps, a troubleshooting table and
+  a security note.
+- Kept the file outside `docs/` so it is not published by GitHub Pages.
+
+#### Files / Components
+- `PAYMENT_SETUP.md` (new)
+- `AGENTS.md`
+
+#### Important Notes
+- Store ID and Variant ID are not secrets; they appear in public checkout URLs.
+  The API key and webhook signing secret are left blank on purpose and must stay
+  in Supabase Edge secrets.
+- Documentation only. No application source changed, so no build was required and
+  the version stays `0.16.0`.
+- ASCII-only, no BOM.
+
+### Modification 065
+
+Date: 2026-11-08
+
+#### Changes
+- Replaced the placeholder `support@testerloop.dev` with the owner's real support
+  address `primesentinel.kandy@gmail.com` on every page and document:
+  `docs/index.html`, `docs/terms.html`, `docs/privacy.html`,
+  `docs/refunds.html`, `docs/README.md`, `docs/lemonsqueezy-activation.md` and
+  `PAYMENT_SETUP.md`.
+- Updated the surrounding wording: `docs/README.md` now states the address
+  instead of asking for a replacement; the activation sheet's support-email field
+  shows the address; `PAYMENT_SETUP.md` step 2 is now "Support email" with the
+  first item ticked.
+- Recorded the change in Modification 063 notes and `AGENTS_PLAN.md`.
+
+#### Files / Components
+- `docs/index.html`, `docs/terms.html`, `docs/privacy.html`,
+  `docs/refunds.html`, `docs/README.md`, `docs/lemonsqueezy-activation.md`
+- `PAYMENT_SETUP.md`
+- `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- Documentation only. No application source changed, so no build was required and
+  the version stays `0.16.0`.
+- The address is a normal Gmail account, not a custom-domain mailbox. The owner
+  must confirm it is monitored before the Lemon Squeezy application, because both
+  Lemon Squeezy and customers use it.
+- No secret was added. All files remain ASCII-only with no BOM.

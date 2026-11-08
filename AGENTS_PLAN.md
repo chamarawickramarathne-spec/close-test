@@ -1628,12 +1628,16 @@ Completed:
   values, Supabase secrets, JWT-on/off deploy pair, webhook, test mode, go live,
   troubleshooting, fallback order.
 - `docs/README.md`: publish steps and editing rules.
+- `PAYMENT_SETUP.md` at the repository root: owner checkbox checklist with Store
+  ID `518607` and Variant ID `2351612`; kept out of `docs/` so Pages does not
+  publish it.
 - All `docs/` files ASCII-only, no BOM, balanced tags. No app source changed, so
   no build and no version bump (`0.16.0` stays).
 
 Pending (owner):
 - Publish Pages and open the live URL.
-- Replace the placeholder `support@testerloop.dev` everywhere in `docs/`.
+- Support email set to `primesentinel.kandy@gmail.com` across `docs/` (was a
+  placeholder until Modification 065).
 - Run the Lemon Squeezy activation flow using the answer sheet.
 - Then follow the payment go-live steps already listed above (secrets, deploys,
   webhook, `035`, test-mode check).

@@ -97,7 +97,7 @@ fill in as many fields as it shows.
 | What do you sell? | Digital software access |
 | Product description | See the paragraph below |
 | How is it fulfilled? | Digitally, inside the customer's TesterLoop account, immediately after payment |
-| Support email | The address you actually monitor (replace `support@testerloop.dev` in the site first) |
+| Support email | `primesentinel.kandy@gmail.com` |
 
 **Product description (copy this):**
 

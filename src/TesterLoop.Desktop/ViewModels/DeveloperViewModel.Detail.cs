@@ -84,10 +84,10 @@ public sealed partial class DeveloperViewModel
         : _campaign.State switch
         {
             "pending" => IsPaymentDue
-                ? $"Pay the {PaymentAmountLabel} project fee and quote {PaymentReferenceLabel}. Operations records it, creates the matching Google Group and attaches it here. You can then add the group to Play Console and save the testing link."
+                ? $"Pay the {PaymentAmountLabel} project fee with the online button on the fee card, or quote {PaymentReferenceLabel}. Operations records it, creates the matching Google Group and attaches it here. You can then add the group to Play Console and save the testing link."
                 : $"Your payment is recorded. Operations is creating the Google Group for {_campaign.AppName} with the reserved group number and will attach it here. You do not need to do anything yet.",
             "awaiting_link" => IsPaymentDue
-                ? $"Your group is attached. Pay the {PaymentAmountLabel} project fee and quote {PaymentReferenceLabel}. Operations will confirm the payment, then you can paste the group address into Play Console and save the testing link."
+                ? $"Your group is attached. Pay the {PaymentAmountLabel} project fee with the online button on the fee card, or quote {PaymentReferenceLabel}. Once the payment lands you can paste the group address into Play Console and save the testing link."
                 : $"In Play Console, open the closed test for {_campaign.PackageName} and paste the group address into the tester list. Then save the testing link below.",
             "live" =>
                 "Testers can join from their bench and open the Play link to install. Keep 12 of them opted in for 14 continuous days.",
@@ -110,7 +110,7 @@ public sealed partial class DeveloperViewModel
             {
                 return _campaign?.PaymentState == "paid"
                     ? "Payment recorded. Operations is creating the group."
-                    : "Pay the project fee to start group setup";
+                    : "Pay the project fee online to start group setup";
             }
 
             var label = "Manual group · no API sync";
@@ -155,13 +155,13 @@ public sealed partial class DeveloperViewModel
 
     public string CompletedCountLabel => $"{CompletedCampaigns.Count} completed";
 
-
     public string EligibleLabel => _campaign?.EligibleOn is null
         ? "Not eligible yet"
         : $"Eligible {_campaign.EligibleOn:dd MMM yyyy}";
 
     private void LoadDetail()
     {
+        ResetCheckoutState();
         SeatCells.Clear();
         Roster.Clear();
         Reports.Clear();

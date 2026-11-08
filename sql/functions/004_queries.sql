@@ -21,6 +21,25 @@ as $$
     'payment_state', c.payment_state::text,
     'payment_amount_cents', c.payment_amount_cents,
     'payment_reference', c.payment_reference,
+    'payment_paid_via', c.payment_paid_via,
+    'payment_provider', c.payment_provider,
+    'payment_provider_ref', c.payment_provider_ref,
+    'payment_checkout_url', (
+      select pi.checkout_url
+      from public.payment_intents pi
+      where pi.campaign_id = c.id
+        and pi.status = 'created'
+      order by pi.created_at desc
+      limit 1
+    ),
+    'payment_intent_expires_at', (
+      select pi.expires_at
+      from public.payment_intents pi
+      where pi.campaign_id = c.id
+        and pi.status = 'created'
+      order by pi.created_at desc
+      limit 1
+    ),
     'paid_at', c.paid_at,
     'seats_used', coalesce(h.seats_used, 0),
     'testers_used', (
@@ -662,6 +681,9 @@ begin
       'payment_amount_cents', v_campaign.payment_amount_cents,
       'tester_payout_cents', v_campaign.tester_payout_cents,
       'payment_reference', v_campaign.payment_reference,
+      'payment_paid_via', v_campaign.payment_paid_via,
+      'payment_provider', v_campaign.payment_provider,
+      'payment_provider_ref', v_campaign.payment_provider_ref,
       'paid_at', v_campaign.paid_at,
       'group_email', v_group.email,
       'group_name', v_group.name,

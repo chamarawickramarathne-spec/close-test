@@ -104,6 +104,15 @@ create table public.campaigns (
   payment_reference text,
   paid_at          timestamptz,
   payment_confirmed_by uuid references auth.users (id) on delete set null,
+  payment_paid_via text check (
+    payment_paid_via is null or payment_paid_via in ('manual', 'online')
+  ),
+  payment_provider text check (
+    payment_provider is null or payment_provider in ('lemonsqueezy')
+  ),
+  payment_provider_ref text check (
+    payment_provider_ref is null or length(payment_provider_ref) <= 100
+  ),
   group_sequence   smallint check (group_sequence between 1 and 999),
   reserved_group_email text check (
     reserved_group_email is null
@@ -193,6 +202,52 @@ create unique index campaigns_reserved_group_url_name_key
 create index campaign_seats_active_tester
   on public.campaign_seats (tester_id)
   where state in ('joined', 'opted_in');
+
+create table public.payment_intents (
+  id                   uuid primary key default gen_random_uuid(),
+  campaign_id          uuid not null references public.campaigns (id) on delete cascade,
+  developer_id         uuid not null references public.developers (id) on delete cascade,
+  provider             text not null default 'lemonsqueezy'
+    check (provider in ('lemonsqueezy')),
+  provider_checkout_id text check (
+    provider_checkout_id is null or length(provider_checkout_id) <= 200
+  ),
+  checkout_url         text check (
+    checkout_url is null or length(checkout_url) <= 1000
+  ),
+  amount_cents         integer not null check (amount_cents between 100 and 1000000),
+  currency             text not null default 'USD' check (currency = 'USD'),
+  status               text not null default 'created'
+    check (status in ('created', 'paid', 'expired', 'failed')),
+  provider_order_id    text check (
+    provider_order_id is null or length(provider_order_id) <= 100
+  ),
+  provider_subtotal_cents integer check (
+    provider_subtotal_cents is null or provider_subtotal_cents >= 0
+  ),
+  provider_total_cents integer check (
+    provider_total_cents is null or provider_total_cents >= 0
+  ),
+  is_test              boolean not null default false,
+  expires_at           timestamptz,
+  paid_at              timestamptz,
+  created_at           timestamptz not null default now(),
+  updated_at           timestamptz not null default now(),
+  constraint payment_intents_paid_check check (
+    status <> 'paid' or paid_at is not null
+  )
+);
+
+create unique index payment_intents_order_key
+  on public.payment_intents (provider_order_id)
+  where provider_order_id is not null;
+
+create unique index payment_intents_open_campaign_key
+  on public.payment_intents (campaign_id)
+  where status = 'created';
+
+create index payment_intents_campaign_idx
+  on public.payment_intents (campaign_id, created_at desc);
 
 create table public.tester_app_install_daily (
   id           uuid primary key default gen_random_uuid(),

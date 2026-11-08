@@ -224,6 +224,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock Text="Status" Style="{StaticResource DetailLabel}" />
                             <TextBlock Grid.Column="1" Text="{Binding CampaignDetail.PaymentLabel}" FontSize="11"
@@ -245,8 +246,11 @@
                             <TextBlock Grid.Row="2" Text="Paid" Style="{StaticResource DetailLabel}" Margin="0,6,0,0" />
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CampaignDetail.PaidAt}"
                                        Style="{StaticResource DetailValue}" Margin="0,6,0,0" />
-                            <TextBlock Grid.Row="3" Text="Play link" Style="{StaticResource DetailLabel}" Margin="0,6,0,0" />
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CampaignDetail.PlayLink}"
+                            <TextBlock Grid.Row="3" Text="Method" Style="{StaticResource DetailLabel}" Margin="0,6,0,0" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CampaignDetail.PaymentMethod}"
+                                       Style="{StaticResource DetailValue}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock Grid.Row="4" Text="Play link" Style="{StaticResource DetailLabel}" Margin="0,6,0,0" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CampaignDetail.PlayLink}"
                                        Style="{StaticResource DetailValue}" Margin="0,6,0,0" />
                         </Grid>
                     </StackPanel>

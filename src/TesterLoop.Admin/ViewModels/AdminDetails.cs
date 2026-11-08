@@ -214,6 +214,8 @@ public sealed class AdminCampaignDetail
 
     public required string PaymentReference { get; init; }
 
+    public required string PaymentMethod { get; init; }
+
     public required string PaidAt { get; init; }
 
     public required string FeeLabel { get; init; }

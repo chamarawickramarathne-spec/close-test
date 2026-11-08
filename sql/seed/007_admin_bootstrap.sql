@@ -79,6 +79,7 @@ grant execute on function public.delete_campaign(uuid) to authenticated;
 grant execute on function public.attach_group(uuid, text, text, text, boolean) to authenticated;
 grant execute on function public.rotate_group_identity(uuid) to authenticated;
 grant execute on function public.confirm_payment(uuid, text) to authenticated;
+grant execute on function public.prepare_payment_intent(uuid) to authenticated;
 grant execute on function public.save_play_link(uuid, text) to authenticated;
 grant execute on function public.set_report_status(uuid, text) to authenticated;
 grant execute on function public.join_campaign(uuid) to authenticated;
@@ -96,6 +97,26 @@ grant execute on function public.record_verified_opt_in(uuid, uuid) to service_r
 
 revoke execute on function public.release_unverified_seat(uuid, uuid) from public, anon, authenticated;
 grant execute on function public.release_unverified_seat(uuid, uuid) to service_role;
+
+revoke execute on function public.attach_payment_checkout(uuid, text, text, timestamptz, boolean)
+  from public, anon, authenticated;
+grant execute on function public.attach_payment_checkout(uuid, text, text, timestamptz, boolean)
+  to service_role;
+
+revoke execute on function public.record_provider_payment(uuid, text, integer, integer, text, boolean, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.record_provider_payment(uuid, text, integer, integer, text, boolean, jsonb)
+  to service_role;
+
+revoke execute on function public.record_provider_refund(text, integer, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.record_provider_refund(text, integer, jsonb)
+  to service_role;
+
+revoke execute on function public.expire_stale_payment_intents()
+  from public, anon, authenticated;
+grant execute on function public.expire_stale_payment_intents()
+  to service_role;
 
 revoke execute on function public.bootstrap_admin(text) from public, anon, authenticated;
 

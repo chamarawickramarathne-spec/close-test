@@ -1578,3 +1578,42 @@ Pending:
 - Device-verify sign-in, join, opt-in, reports and usage sync under the new
   package id; no device or accelerated emulator is available here.
 - Apply migrations `032`-`034` and run the QA purge.
+## Release 0.16.0 desktop - online card payments (2026-11-08)
+
+Completed:
+- Developers can pay the $15 project fee online by card through Lemon Squeezy
+  (Merchant of Record) from the project page; operations can still record an
+  offline payment and both paths write the same campaign payment state.
+- Added `sql/migrations/035_online_payments.sql`: campaign `payment_paid_via` /
+  `payment_provider` / `payment_provider_ref`, the `payment_intents` table with
+  RLS, `prepare_payment_intent`, `attach_payment_checkout`,
+  `record_provider_payment`, `record_provider_refund`,
+  `expire_stale_payment_intents`, and updated `confirm_payment`,
+  `developer_campaign_json` and `admin_campaign_detail`. Mirrored into the
+  greenfield schema, RLS, functions and bootstrap grants.
+- Added Edge Functions `create-payment` (JWT, hosted checkout per project) and
+  `ls-webhook` (HMAC-SHA256 hex signature, `order_created` / `order_refunded`,
+  dedupe on the provider order id, summary-only audit, no PII).
+- Desktop: `Pay $15.00 online` opens the hosted checkout, then the project page
+  polls for up to ten minutes and shows `Paid online` with the provider order
+  id; `Check payment status` is available manually. `CheckoutLink` allows only
+  `https://<store>.lemonsqueezy.com/checkout/...`.
+- Admin: the close test project page shows how the fee was paid and the provider
+  order id.
+- Pricing is unchanged at $15.00 gross (provider fee 5% + 50c, net about $13.75).
+  The webhook compares the order subtotal with the campaign fee, refuses a
+  test-mode mismatch and never trusts a browser redirect.
+- `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors. Published and
+  packaged `0.16.0` for both apps and both architectures; all four executables
+  start, keep responsive windows and were stopped. All four installers report
+  product version `0.16.0`.
+
+Pending:
+- Owner: create the Lemon Squeezy store, product and variant, generate an API
+  key, register the webhook (`order_created`, `order_refunded`), set
+  `LS_API_KEY`, `LS_STORE_ID`, `LS_VARIANT_ID`, `LS_WEBHOOK_SECRET`,
+  `LS_TEST_MODE`, deploy `create-payment` and `ls-webhook`, then run `035`.
+- Live verification of the checkout, webhook, polling and admin method display.
+- Still owed from earlier rounds: migrations `032`-`034`, and the QA purge in
+  `sql/maintenance/purge_test_accounts.sql`.
+- Upload `release/TesterLoop-Mobile-1.2.6.aab` to Google Play.

@@ -625,9 +625,18 @@ begin
   set payment_state = 'paid',
       paid_at = now(),
       payment_reference = v_reference,
-      payment_confirmed_by = v_admin
+      payment_confirmed_by = v_admin,
+      payment_paid_via = 'manual',
+      payment_provider = null,
+      payment_provider_ref = null
   where id = p_campaign_id
   returning paid_at into v_paid_at;
+
+  update public.payment_intents
+  set status = 'expired',
+      updated_at = now()
+  where campaign_id = p_campaign_id
+    and status = 'created';
 
   if v_campaign.group_id is null then
     v_reservation := public.reserve_group_identity(p_campaign_id, false);
@@ -640,6 +649,7 @@ begin
       'campaign_id', p_campaign_id,
       'amount_cents', v_campaign.payment_amount_cents,
       'reference', v_reference,
+      'paid_via', 'manual',
       'reservation', v_reservation
     )
   );
@@ -649,8 +659,407 @@ begin
     'payment_state', 'paid',
     'payment_amount_cents', v_campaign.payment_amount_cents,
     'payment_reference', v_reference,
+    'payment_paid_via', 'manual',
     'paid_at', v_paid_at
   ) || v_reservation;
+end;
+$$;
+
+-- Online payment intents. The developer opens a hosted Lemon Squeezy checkout;
+-- only the webhook (service_role) may mark the fee paid. The amount always comes
+-- from the campaign, never from the client.
+create or replace function public.prepare_payment_intent(p_campaign_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_dev      uuid := public.require_developer();
+  v_campaign public.campaigns%rowtype;
+  v_intent   public.payment_intents%rowtype;
+  v_profile  public.profiles%rowtype;
+  v_intent_id uuid;
+begin
+  select * into v_campaign
+  from public.campaigns
+  where id = p_campaign_id
+  for update;
+
+  if not found or v_campaign.developer_id <> v_dev then
+    raise exception 'That project could not be found.';
+  end if;
+  if v_campaign.state not in ('pending', 'awaiting_link') then
+    raise exception 'This project is not waiting for payment.';
+  end if;
+  if v_campaign.payment_state = 'paid' then
+    raise exception 'This project fee is already paid.';
+  end if;
+
+  select * into v_intent
+  from public.payment_intents
+  where campaign_id = p_campaign_id
+    and status = 'created'
+  order by created_at desc
+  limit 1
+  for update;
+
+  if found then
+    if v_intent.checkout_url is not null
+       and v_intent.expires_at is not null
+       and v_intent.expires_at > now() then
+      v_intent_id := v_intent.id;
+    else
+      if v_intent.created_at > now() - interval '10 seconds' then
+        raise exception 'Wait a few seconds before opening the checkout again.';
+      end if;
+      update public.payment_intents
+      set status = 'expired',
+          updated_at = now()
+      where id = v_intent.id;
+    end if;
+  end if;
+
+  if v_intent_id is null then
+    insert into public.payment_intents (
+      campaign_id,
+      developer_id,
+      amount_cents,
+      currency,
+      expires_at
+    )
+    values (
+      p_campaign_id,
+      v_dev,
+      v_campaign.payment_amount_cents,
+      'USD',
+      now() + interval '1 hour'
+    )
+    returning id into v_intent_id;
+
+    select * into v_intent
+    from public.payment_intents
+    where id = v_intent_id;
+  end if;
+
+  select * into v_profile
+  from public.profiles
+  where id = (
+    select d.auth_user_id from public.developers d where d.id = v_dev
+  );
+
+  return jsonb_build_object(
+    'intent_id', v_intent.id,
+    'campaign_id', p_campaign_id,
+    'app_name', v_campaign.app_name,
+    'amount_cents', v_intent.amount_cents,
+    'currency', v_intent.currency,
+    'reference', 'TL-' || upper(substr(replace(p_campaign_id::text, '-', ''), 1, 8)),
+    'checkout_url', v_intent.checkout_url,
+    'expires_at', v_intent.expires_at,
+    'is_test', v_intent.is_test,
+    'developer_email', v_profile.email,
+    'developer_name', coalesce(v_profile.display_name, '')
+  );
+end;
+$$;
+
+create or replace function public.attach_payment_checkout(
+  p_intent_id uuid,
+  p_checkout_id text,
+  p_checkout_url text,
+  p_expires_at timestamptz,
+  p_is_test boolean
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_intent public.payment_intents%rowtype;
+begin
+  if length(coalesce(p_checkout_id, '')) not between 1 and 200 then
+    raise exception 'The checkout id is invalid.';
+  end if;
+  if length(coalesce(p_checkout_url, '')) not between 1 and 1000
+     or p_checkout_url !~ '^https://[a-z0-9-]+[.]lemonsqueezy[.]com/checkout/[^[:space:]]+$' then
+    raise exception 'The checkout link is not a Lemon Squeezy checkout URL.';
+  end if;
+
+  select * into v_intent
+  from public.payment_intents
+  where id = p_intent_id
+  for update;
+
+  if not found then
+    raise exception 'That checkout no longer exists.';
+  end if;
+  if v_intent.status <> 'created' then
+    return jsonb_build_object(
+      'intent_id', v_intent.id,
+      'status', v_intent.status,
+      'checkout_url', v_intent.checkout_url
+    );
+  end if;
+
+  update public.payment_intents
+  set provider_checkout_id = p_checkout_id,
+      checkout_url = p_checkout_url,
+      expires_at = coalesce(p_expires_at, expires_at, now() + interval '1 hour'),
+      is_test = coalesce(p_is_test, false),
+      updated_at = now()
+  where id = p_intent_id
+  returning * into v_intent;
+
+  return jsonb_build_object(
+    'intent_id', v_intent.id,
+    'status', v_intent.status,
+    'checkout_url', v_intent.checkout_url,
+    'expires_at', v_intent.expires_at,
+    'is_test', v_intent.is_test
+  );
+end;
+$$;
+
+create or replace function public.record_provider_payment(
+  p_intent_id uuid,
+  p_order_id text,
+  p_subtotal_cents integer,
+  p_total_cents integer,
+  p_currency text,
+  p_is_test boolean,
+  p_payload jsonb default '{}'::jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_intent     public.payment_intents%rowtype;
+  v_campaign   public.campaigns%rowtype;
+  v_order_id   text := nullif(btrim(coalesce(p_order_id, '')), '');
+  v_reservation jsonb := '{}'::jsonb;
+begin
+  if v_order_id is null or length(v_order_id) > 100 then
+    raise exception 'The order id is invalid.';
+  end if;
+
+  select * into v_intent
+  from public.payment_intents
+  where id = p_intent_id
+  for update;
+
+  if not found then
+    raise exception 'That checkout no longer exists.';
+  end if;
+
+  if v_intent.status = 'paid' or exists (
+    select 1 from public.payment_intents pi
+    where pi.provider_order_id = v_order_id
+      and pi.status = 'paid'
+  ) then
+    return jsonb_build_object(
+      'status', 'already_paid',
+      'intent_id', v_intent.id,
+      'campaign_id', v_intent.campaign_id
+    );
+  end if;
+
+  select * into v_campaign
+  from public.campaigns
+  where id = v_intent.campaign_id
+  for update;
+
+  if not found then
+    raise exception 'That project no longer exists.';
+  end if;
+
+  if coalesce(p_is_test, false) <> v_intent.is_test then
+    update public.payment_intents
+    set status = 'failed',
+        provider_order_id = v_order_id,
+        updated_at = now()
+    where id = v_intent.id;
+
+    perform public.write_audit(
+      'payment.test_mode_mismatch',
+      v_campaign.app_name,
+      jsonb_build_object(
+        'campaign_id', v_intent.campaign_id,
+        'order_id', v_order_id,
+        'checkout_is_test', v_intent.is_test,
+        'order_is_test', coalesce(p_is_test, false)
+      )
+    );
+
+    return jsonb_build_object(
+      'status', 'test_mode_mismatch',
+      'intent_id', v_intent.id,
+      'campaign_id', v_intent.campaign_id
+    );
+  end if;
+
+  if upper(coalesce(p_currency, '')) <> v_intent.currency
+     or p_subtotal_cents is distinct from v_intent.amount_cents then
+    update public.payment_intents
+    set status = 'failed',
+        provider_order_id = v_order_id,
+        provider_subtotal_cents = p_subtotal_cents,
+        provider_total_cents = p_total_cents,
+        updated_at = now()
+    where id = v_intent.id;
+
+    perform public.write_audit(
+      'payment.amount_mismatch',
+      v_campaign.app_name,
+      jsonb_build_object(
+        'campaign_id', v_intent.campaign_id,
+        'order_id', v_order_id,
+        'expected_cents', v_intent.amount_cents,
+        'received_subtotal_cents', p_subtotal_cents,
+        'currency', p_currency
+      )
+    );
+
+    return jsonb_build_object(
+      'status', 'amount_mismatch',
+      'intent_id', v_intent.id,
+      'campaign_id', v_intent.campaign_id,
+      'expected_cents', v_intent.amount_cents,
+      'received_subtotal_cents', p_subtotal_cents
+    );
+  end if;
+
+  if v_campaign.payment_state <> 'paid' then
+    update public.campaigns
+    set payment_state = 'paid',
+        paid_at = now(),
+        payment_reference = coalesce(
+          payment_reference,
+          'TL-' || upper(substr(replace(v_campaign.id::text, '-', ''), 1, 8))
+        ),
+        payment_confirmed_by = null,
+        payment_paid_via = 'online',
+        payment_provider = 'lemonsqueezy',
+        payment_provider_ref = v_order_id
+    where id = v_campaign.id
+    returning * into v_campaign;
+
+    if v_campaign.group_id is null then
+      v_reservation := public.reserve_group_identity(v_campaign.id, false);
+    end if;
+  end if;
+
+  update public.payment_intents
+  set status = 'paid',
+      paid_at = now(),
+      provider_order_id = v_order_id,
+      provider_subtotal_cents = p_subtotal_cents,
+      provider_total_cents = p_total_cents,
+      updated_at = now()
+  where id = v_intent.id;
+
+  perform public.write_audit(
+    'payment.paid_online',
+    v_campaign.app_name,
+    jsonb_build_object(
+      'campaign_id', v_campaign.id,
+      'intent_id', v_intent.id,
+      'order_id', v_order_id,
+      'amount_cents', v_intent.amount_cents,
+      'total_cents', p_total_cents,
+      'is_test', coalesce(p_is_test, false),
+      'reservation', v_reservation,
+      'payload', coalesce(p_payload, '{}'::jsonb)
+    )
+  );
+
+  return jsonb_build_object(
+    'status', 'paid',
+    'intent_id', v_intent.id,
+    'campaign_id', v_campaign.id,
+    'amount_cents', v_intent.amount_cents,
+    'is_test', coalesce(p_is_test, false),
+    'reservation', v_reservation
+  );
+end;
+$$;
+
+create or replace function public.record_provider_refund(
+  p_order_id text,
+  p_amount_cents integer,
+  p_payload jsonb default '{}'::jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_order_id text := nullif(btrim(coalesce(p_order_id, '')), '');
+  v_intent   public.payment_intents%rowtype;
+  v_app      text;
+begin
+  if v_order_id is null or length(v_order_id) > 100 then
+    raise exception 'The order id is invalid.';
+  end if;
+
+  select * into v_intent
+  from public.payment_intents
+  where provider_order_id = v_order_id
+  limit 1;
+
+  if not found then
+    perform public.write_audit(
+      'payment.refund_unknown_order',
+      v_order_id,
+      jsonb_build_object('order_id', v_order_id, 'amount_cents', p_amount_cents)
+    );
+    return jsonb_build_object('status', 'unknown_order', 'order_id', v_order_id);
+  end if;
+
+  select app_name into v_app
+  from public.campaigns
+  where id = v_intent.campaign_id;
+
+  perform public.write_audit(
+    'payment.refunded',
+    coalesce(v_app, v_order_id),
+    jsonb_build_object(
+      'campaign_id', v_intent.campaign_id,
+      'order_id', v_order_id,
+      'amount_cents', p_amount_cents,
+      'payload', coalesce(p_payload, '{}'::jsonb)
+    )
+  );
+
+  return jsonb_build_object(
+    'status', 'recorded',
+    'campaign_id', v_intent.campaign_id,
+    'order_id', v_order_id
+  );
+end;
+$$;
+
+create or replace function public.expire_stale_payment_intents()
+returns integer
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_count integer;
+begin
+  update public.payment_intents
+  set status = 'expired',
+      updated_at = now()
+  where status = 'created'
+    and created_at < now() - interval '24 hours';
+
+  get diagnostics v_count = row_count;
+  return v_count;
 end;
 $$;
 

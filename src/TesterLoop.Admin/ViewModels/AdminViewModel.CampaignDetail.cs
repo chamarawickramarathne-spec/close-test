@@ -163,6 +163,7 @@ public sealed partial class AdminViewModel
             PaymentLabel = PaymentLabel(campaign.PaymentState, campaign.PaymentAmountCents),
             PaymentTone = PaymentTone(campaign.PaymentState),
             PaymentReference = string.IsNullOrWhiteSpace(campaign.PaymentReference) ? "-" : campaign.PaymentReference,
+            PaymentMethod = PaymentMethod(campaign),
             PaidAt = Date(campaign.PaidAt),
             FeeLabel = $"{Money(campaign.PaymentAmountCents)} fee - {Money(campaign.TesterPayoutCents)} per tester",
             TestersLabel = $"{totals.TestersUsed} / {AppConfig.SeatCap} used",

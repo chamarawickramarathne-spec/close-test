@@ -31,6 +31,16 @@ public static class LinkLauncher
 
     public static bool TryOpenGroupCreate() => TryStart(new Uri(GroupsCreate, UriKind.Absolute));
 
+    public static bool TryOpenCheckout(string? url)
+    {
+        if (!CheckoutLink.TryCreate(url, out var uri))
+        {
+            return false;
+        }
+
+        return TryStart(uri);
+    }
+
     private static bool TryStart(Uri uri)
     {
         try

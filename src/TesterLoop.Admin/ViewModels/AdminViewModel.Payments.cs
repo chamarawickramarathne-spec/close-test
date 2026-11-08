@@ -108,6 +108,15 @@ public sealed partial class AdminViewModel
     private static string PaymentLabel(string? state, int amountCents)
         => state == "paid" ? "Paid" : $"{Money(amountCents)} due";
 
-    private static string PaymentTone(string? state)
-        => state == "paid" ? "good" : "warn";
+    private static string PaymentTone(string? state) => state == "paid" ? "good" : "warn";
+
+    private static string PaymentMethod(AdminCampaignProfileDto campaign)
+        => campaign.PaymentPaidVia switch
+        {
+            "online" => string.IsNullOrWhiteSpace(campaign.PaymentProviderRef)
+                ? "Paid online via Lemon Squeezy"
+                : $"Paid online via Lemon Squeezy - order {campaign.PaymentProviderRef}",
+            "manual" => "Recorded by operations",
+            _ => campaign.PaymentState == "paid" ? "Paid - method not recorded" : "Not paid yet",
+        };
 }

@@ -33,8 +33,8 @@ public sealed partial class DeveloperViewModel
             ? "Payment recorded. Operations is creating the Google Group. You can save the Play link once it is attached."
             : "The project fee is recorded. You can save the Play link once the group is attached in Play Console."
         : _campaign?.GroupEmail is null
-            ? $"Pay {PaymentAmountLabel} and quote the reference above. Operations records the fee, then creates and attaches the Google Group."
-            : $"Pay {PaymentAmountLabel} and quote the reference above. Operations will confirm it, then you can save the Play link.";
+            ? $"Pay {PaymentAmountLabel} online below, or quote the reference above so operations can record it. Operations then creates and attaches the Google Group."
+            : $"Pay {PaymentAmountLabel} online below, or quote the reference above. Operations confirms it, then you can save the Play link.";
 
     public string PaymentTone => _campaign?.PaymentState == "paid" ? "good" : "warn";
 }

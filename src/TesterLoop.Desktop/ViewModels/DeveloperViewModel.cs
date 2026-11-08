@@ -44,6 +44,8 @@ public sealed partial class DeveloperViewModel : ObservableObject
         SaveLinkCommand = new AsyncRelayCommand(SaveLinkAsync);
         DeleteProjectCommand = new AsyncRelayCommand(DeleteProjectAsync);
         DeleteCompletedCommand = new AsyncRelayCommand<CampaignOption>(DeleteCompletedAsync);
+        PayOnlineCommand = new AsyncRelayCommand(PayOnlineAsync);
+        CheckPaymentCommand = new AsyncRelayCommand(CheckPaymentAsync);
 
         CopyGroupCommand = new RelayCommand(CopyGroup);
         CopyOptInCommand = new RelayCommand(CopyOptIn);
@@ -264,7 +266,7 @@ public sealed partial class DeveloperViewModel : ObservableObject
 
         if (_campaign.PaymentState != "paid")
         {
-            Error = $"The {AppConfig.ProjectFeeLabel} project fee must be confirmed by operations before you can save the link.";
+            Error = $"The {AppConfig.ProjectFeeLabel} project fee must be paid before you can save the link.";
             return;
         }
 

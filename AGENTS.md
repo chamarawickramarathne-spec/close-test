@@ -4467,3 +4467,126 @@ Date: 2026-11-08
   secrets changed; the upload keystore stays outside git.
 - Still owed from earlier rounds: migrations `032`-`034` and the QA purge in
   `sql/maintenance/purge_test_accounts.sql`.
+
+### Modification 062
+
+Date: 2026-11-08
+
+#### Changes
+- Developers can now pay the project fee online by card through Lemon Squeezy
+  (a Merchant of Record), instead of waiting for operations to confirm a manual
+  payment. Operations can still record an offline payment; both paths write the
+  same campaign payment state.
+- Added `campaigns.payment_paid_via` (`manual` / `online`), `payment_provider`
+  and `payment_provider_ref` (the provider order id), and a `payment_intents`
+  table that tracks one checkout per attempt with the amount, currency,
+  reference, provider checkout url, expiry, test-mode flag and state
+  (`open` / `paid` / `expired` / `cancelled`).
+- Added SQL functions: `prepare_payment_intent` (developer, 10 second cooldown,
+  reuses an open intent), `attach_payment_checkout` (service role),
+  `record_provider_payment` (service role; compares the provider order
+  **subtotal** with the campaign fee, refuses a test-mode mismatch, marks the
+  campaign paid, stamps `payment_paid_via = 'online'`, reserves the group
+  identity and writes `payment.paid_online`), `record_provider_refund` (service
+  role, audit only) and `expire_stale_payment_intents` (service role).
+  `confirm_payment` now stamps `payment_paid_via = 'manual'` and supersedes any
+  open intent.
+- Added two Supabase Edge Functions: `create-payment` (JWT required, creates or
+  reuses the Lemon Squeezy checkout for the caller's own project) and
+  `ls-webhook` (HMAC-SHA256 hex signature check with a timing-safe compare,
+  `order_created` and `order_refunded`, dedupe on the provider order id, 200 for
+  events it does not own, 5xx only for transient database errors).
+- Desktop: the project fee card gained `Pay $15.00 online` and
+  `Check payment status`. The app opens the hosted checkout in the default
+  browser, then polls the developer dashboard every five seconds for up to ten
+  minutes and shows `Paid online` with the provider order id. The Play link
+  stays locked until the fee is recorded.
+- Added shared `PaymentCheckoutDto`, `SupabaseService.Payments.cs`
+  (`StartOnlinePaymentAsync`), `CheckoutLink` (only
+  `https://<store>.lemonsqueezy.com/checkout/...`), `LinkLauncher.TryOpenCheckout`
+  and `DeveloperViewModel.Checkout.cs`.
+- Admin: the close test project page shows how the fee was paid and the provider
+  order id, so operations can reconcile a card payment with the project.
+- Added `sql/migrations/035_online_payments.sql`; mirrored the columns, table,
+  RLS, functions and grants into the greenfield SQL and bootstrap.
+- Version bumped to `0.16.0` in `AppConfig`, both projects, both installers and
+  `medial_support.txt`. Android stays at `1.2.6`; no mobile change was needed.
+
+#### Files / Components
+- `sql/migrations/035_online_payments.sql` (new)
+- `sql/schema/001_init.sql`, `sql/policies/002_rls.sql`,
+  `sql/functions/004_queries.sql`, `sql/functions/005_mutations.sql`,
+  `sql/seed/007_admin_bootstrap.sql`
+- `supabase/functions/create-payment/index.ts` (new),
+  `supabase/functions/ls-webhook/index.ts` (new)
+- `src/TesterLoop.Shared/Core/Data/Contracts.Payments.cs` (new),
+  `SupabaseService.Payments.cs` (new), `Contracts.cs`,
+  `Contracts.AdminDetail.cs`
+- `src/TesterLoop.Shared/Core/CheckoutLink.cs` (new), `LinkLauncher.cs`
+- `src/TesterLoop.Desktop/ViewModels/DeveloperViewModel.Checkout.cs` (new),
+  `DeveloperViewModel.cs`, `DeveloperViewModel.Detail.cs`,
+  `DeveloperViewModel.Payments.cs`, `DeveloperViewModel.Projects.cs`
+- `src/TesterLoop.Desktop/Views/DeveloperProjectDetailView.xaml`
+- `src/TesterLoop.Admin/ViewModels/AdminViewModel.Payments.cs`,
+  `AdminViewModel.CampaignDetail.cs`, `AdminDetails.cs`
+- `src/TesterLoop.Admin/Views/AdminCampaignDetailView.xaml`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Pricing is unchanged: the developer still pays `$15.00`. Lemon Squeezy keeps
+  its fee (5% + 50c) and pays out to the owner's bank account, so the net is
+  about `$13.75`. The app never claims the developer pays less or more.
+- Tax is added by the provider on top of the price. The webhook therefore
+  compares the order **subtotal** with `payment_amount_cents`; the total is
+  stored only. An amount mismatch marks the intent paid but refuses to mark the
+  campaign paid, so a wrong price cannot silently activate a project.
+- A test-mode order can never mark a live campaign paid. `is_test` is compared
+  with the `LS_TEST_MODE` Edge secret, and a mismatch returns
+  `test_mode_mismatch` without changing the campaign.
+- The webhook is the only writer of an online payment. It is verified with the
+  `LS_WEBHOOK_SECRET` signature over the raw body, dedupes on
+  `payment_intents.provider_order_id`, and records a summary-only audit row
+  (event, order id, status, currency, total, test mode) with no customer PII.
+  Refunds are audited, never reversed automatically.
+- Secrets live only in Edge secrets: `LS_API_KEY`, `LS_STORE_ID`,
+  `LS_VARIANT_ID`, `LS_WEBHOOK_SECRET`, `LS_TEST_MODE`. No provider key or
+  webhook secret is shipped in a desktop client.
+- `payment_intents` and the new service-role functions are revoked from
+  `public`, `anon` and `authenticated`; the service-role functions are granted
+  only to `service_role`. `prepare_payment_intent` requires the developer role
+  and the caller's own campaign. The client cannot choose an amount, currency or
+  checkout url.
+- The desktop never trusts a browser redirect. It only reloads its own dashboard
+  and treats `payment_state = 'paid'` as final, so a forged redirect changes
+  nothing.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  Published and packaged `0.16.0` for both apps and both architectures:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.16.0.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.16.0.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.16.0.0`,
+    PE `0x14C`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.16.0.0`,
+    PE `0x8664`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,176,963 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,066,959 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,114,592 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,988,585 bytes
+  All four executables start, keep responsive windows titled `TesterLoop` /
+  `TesterLoop Admin`, and were stopped after the check. All four installers
+  report product version `0.16.0`.
+- Not verified live: the checkout, the webhook, the payment polling and the
+  admin method display, because there is no Lemon Squeezy account, no
+  `035` deployment and no operations account yet. SQL and TypeScript were
+  reviewed statically only; no local Postgres, `psql`, `supabase` or `deno` CLI
+  is available.
+- Owner tasks before this can take money: create the Lemon Squeezy store,
+  product and variant, generate an API key, register the webhook for
+  `order_created` and `order_refunded`, set the five `LS_*` secrets, deploy
+  `create-payment` and `ls-webhook`, then run `035` in the Supabase SQL editor.
+- Known limitation: the updater-style polling stops after ten minutes; a slower
+  payment is still recorded by the webhook and appears after a manual
+  `Check payment status` or the next dashboard load.

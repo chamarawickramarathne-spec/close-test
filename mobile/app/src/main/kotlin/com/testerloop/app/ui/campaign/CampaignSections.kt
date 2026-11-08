@@ -17,6 +17,7 @@ import com.testerloop.app.core.PlayLink
 import com.testerloop.app.core.formatDate
 import com.testerloop.app.core.humanState
 import com.testerloop.app.core.isActiveCampaign
+import com.testerloop.app.core.projectClock
 import com.testerloop.app.data.api.AvailableItem
 import com.testerloop.app.data.api.MineItem
 import com.testerloop.app.ui.AppVm
@@ -59,8 +60,12 @@ internal fun CampaignHero(mine: MineItem?, available: AvailableItem?) {
         }
         Spacer(Modifier.height(16.dp))
         if (mine != null) {
+            val clock = mine.projectClock()
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("${mine.days} of 14 days", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (clock.started) clock.daysLabel else clock.waitingLabel,
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Spacer(Modifier.weight(1f))
                 Text(
                     "Seat ${mine.seatNumber ?: "—"}",
@@ -69,10 +74,14 @@ internal fun CampaignHero(mine: MineItem?, available: AvailableItem?) {
                 )
             }
             Spacer(Modifier.height(8.dp))
-            ProgressTrack(progress = mine.days / 14f)
+            ProgressTrack(progress = clock.progress)
             Spacer(Modifier.height(10.dp))
             Text(
-                "Confirmed opt-in starts the clock. Opting out resets it.",
+                if (clock.started) {
+                    "The project clock starts when the 12th tester confirms opt-in. Opting out resets your seat."
+                } else {
+                    "${clock.confirmedLabel}. The 14-day clock starts when all ${clock.requiredTesters} testers confirm."
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = Muted
             )

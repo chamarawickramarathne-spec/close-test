@@ -141,6 +141,7 @@
                             <ColumnDefinition Width="76" />
                             <ColumnDefinition Width="112" />
                             <ColumnDefinition Width="92" />
+                            <ColumnDefinition Width="96" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="PROJECT" Style="{StaticResource DetailEyebrow}" />
                         <TextBlock Grid.Column="1" Text="STATE" Style="{StaticResource DetailEyebrow}" />
@@ -155,6 +156,8 @@
                         <TextBlock Grid.Column="7" Text="REFERENCE" Style="{StaticResource DetailEyebrow}"
                                    TextAlignment="Right" />
                         <TextBlock Grid.Column="8" Text="ACTION" Style="{StaticResource DetailEyebrow}"
+                                   TextAlignment="Right" />
+                        <TextBlock Grid.Column="9" Text="ACTIVITY" Style="{StaticResource DetailEyebrow}"
                                    TextAlignment="Right" />
                     </Grid>
 
@@ -177,6 +180,7 @@
                                             <ColumnDefinition Width="76" />
                                             <ColumnDefinition Width="112" />
                                             <ColumnDefinition Width="92" />
+                                            <ColumnDefinition Width="96" />
                                         </Grid.ColumnDefinitions>
                                         <StackPanel>
                                             <TextBlock Text="{Binding AppName}" FontSize="11" FontWeight="SemiBold"
@@ -257,6 +261,14 @@
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Center"
                                                 Command="{Binding DataContext.MarkTesterPaidCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" />
+                                        <Button Grid.Column="9"
+                                                Content="View activity"
+                                                Style="{StaticResource QuietButton}"
+                                                FontSize="10.5"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.OpenTesterProjectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}" />
                                     </Grid>
                                 </Border>

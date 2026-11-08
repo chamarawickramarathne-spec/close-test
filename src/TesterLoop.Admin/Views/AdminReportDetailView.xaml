@@ -25,10 +25,10 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,24,28,36">
-            <Button Content="Back to feedback"
+            <Button Content="{Binding ReportBackLabel}"
                     Style="{StaticResource GhostButton}"
                     HorizontalAlignment="Left"
-                    Command="{Binding BackToFeedbackCommand}" />
+                    Command="{Binding BackFromReportCommand}" />
 
             <Grid Margin="0,16,0,0">
                 <StackPanel>
@@ -199,86 +199,94 @@
 
                 <Border Style="{StaticResource Card}" Padding="20,18" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="INSTALL AND USAGE AT FILING" Style="{StaticResource DetailEyebrow}" />
-                        <TextBlock Text="{Binding ReportDetail.SnapshotState}" Margin="0,6,0,0">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource DetailMetric}">
-                                    <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ReportDetail.SnapshotTone}" Value="good">
-                                            <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ReportDetail.SnapshotTone}" Value="warn">
-                                            <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="{Binding ReportDetail.SnapshotDays}" Style="{StaticResource Caption}"
-                                   FontSize="10.5" Margin="0,2,0,0" />
-                        <TextBlock Text="{Binding ReportDetail.SnapshotDetail}" Style="{StaticResource DetailValue}"
-                                   Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding ReportDetail.SnapshotCaptured}" Style="{StaticResource Caption}"
-                                   FontSize="10" Margin="0,8,0,0" />
+                        <TextBlock Text="INSTALL AND USAGE" Style="{StaticResource DetailEyebrow}" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Margin="0,0,10,0">
+                                <TextBlock Text="AT FILING" Style="{StaticResource DetailLabel}" />
+                                <TextBlock Text="{Binding ReportDetail.SnapshotState}" Margin="0,4,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource DetailMetric}">
+                                            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ReportDetail.SnapshotTone}" Value="good">
+                                                    <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ReportDetail.SnapshotTone}" Value="warn">
+                                                    <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="{Binding ReportDetail.SnapshotDays}" Style="{StaticResource Caption}"
+                                           FontSize="10.5" Margin="0,2,0,0" />
+                                <TextBlock Text="{Binding ReportDetail.SnapshotDetail}" Style="{StaticResource DetailValue}"
+                                           Margin="0,8,0,0" />
+                                <TextBlock Text="{Binding ReportDetail.SnapshotCaptured}" Style="{StaticResource Caption}"
+                                           FontSize="10" Margin="0,8,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                <TextBlock Text="LIVE NOW" Style="{StaticResource DetailLabel}" />
+                                <TextBlock Text="{Binding ReportDetail.CurrentState}" Margin="0,4,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource DetailMetric}">
+                                            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ReportDetail.CurrentTone}" Value="good">
+                                                    <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ReportDetail.CurrentTone}" Value="warn">
+                                                    <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="{Binding ReportDetail.CurrentDays}" Style="{StaticResource Caption}"
+                                           FontSize="10.5" Margin="0,2,0,0" />
+                                <TextBlock Text="{Binding ReportDetail.CurrentDetail}" Style="{StaticResource DetailValue}"
+                                           Margin="0,8,0,0" />
+                                <TextBlock Text="{Binding ReportDetail.CurrentCaptured}" Style="{StaticResource Caption}"
+                                           FontSize="10" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Style="{StaticResource Card}" Padding="20,18" Margin="8,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="CURRENT USAGE" Style="{StaticResource DetailEyebrow}" />
-                        <TextBlock Text="{Binding ReportDetail.CurrentState}" Margin="0,6,0,0">
+                        <TextBlock Text="DAILY INSTALL CHECKS AT FILING" Style="{StaticResource DetailEyebrow}" />
+                        <TextBlock Text="{Binding ReportDetail.InstallHistoryState}" Margin="0,6,0,0">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource DetailMetric}">
                                     <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ReportDetail.CurrentTone}" Value="good">
+                                        <DataTrigger Binding="{Binding ReportDetail.InstallHistoryTone}" Value="good">
                                             <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding ReportDetail.CurrentTone}" Value="warn">
+                                        <DataTrigger Binding="{Binding ReportDetail.InstallHistoryTone}" Value="warn">
                                             <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ReportDetail.InstallHistoryTone}" Value="bad">
+                                            <Setter Property="Foreground" Value="{StaticResource BadBrush}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBlock Text="{Binding ReportDetail.CurrentDays}" Style="{StaticResource Caption}"
-                                   FontSize="10.5" Margin="0,2,0,0" />
-                        <TextBlock Text="{Binding ReportDetail.CurrentDetail}" Style="{StaticResource DetailValue}"
+                        <TextBlock Text="{Binding ReportDetail.InstallHistorySummary}" Style="{StaticResource DetailValue}"
                                    Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding ReportDetail.CurrentCaptured}" Style="{StaticResource Caption}"
-                                   FontSize="10" Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding ReportDetail.InstallHistoryWindow}" Style="{StaticResource Caption}"
+                                   FontSize="10" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
             </Grid>
-
-            <Border Style="{StaticResource Card}" Padding="20,18" Margin="0,12,0,0">
-                <StackPanel>
-                    <TextBlock Text="DAILY INSTALL CHECKS AT FILING" Style="{StaticResource DetailEyebrow}" />
-                    <TextBlock Text="{Binding ReportDetail.InstallHistoryState}" Margin="0,6,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource DetailMetric}">
-                                <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ReportDetail.InstallHistoryTone}" Value="good">
-                                        <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ReportDetail.InstallHistoryTone}" Value="warn">
-                                        <Setter Property="Foreground" Value="{StaticResource WarnBrush}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ReportDetail.InstallHistoryTone}" Value="bad">
-                                        <Setter Property="Foreground" Value="{StaticResource BadBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="{Binding ReportDetail.InstallHistorySummary}" Style="{StaticResource DetailValue}"
-                               Margin="0,8,0,0" />
-                    <TextBlock Text="{Binding ReportDetail.InstallHistoryWindow}" Style="{StaticResource Caption}"
-                               FontSize="10" Margin="0,4,0,0" />
-                </StackPanel>
-            </Border>
 
             <Border Background="{StaticResource SurfaceAltBrush}" BorderBrush="{StaticResource LineBrush}"
                     BorderThickness="1" CornerRadius="9" Padding="12,9" Margin="0,12,0,0">

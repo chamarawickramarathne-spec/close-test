@@ -4001,3 +4001,340 @@ Date: 2026-11-08
 - Not verified: the developer new-project summary with a live package list,
   because no live developer account was used this round. Installers remain
   unsigned and have not been run end to end.
+### Modification 055
+
+Date: 2026-11-08
+
+#### Changes
+- Merged the two usage cards on the TesterLoop Admin report detail page. The
+  separate `INSTALL AND USAGE AT FILING` and `CURRENT USAGE` cards are now one
+  `INSTALL AND USAGE` card with `AT FILING` and `LIVE NOW` columns side by side.
+- Placed `DAILY INSTALL CHECKS AT FILING` beside that merged card, so the page
+  shows the filing snapshot, the current state and the daily install window in one
+  row instead of stacked cards.
+- Kept the existing good/warn tone triggers on every label; no view-model or DTO
+  changed.
+- Version bumped to `0.14.3` in `AppConfig`, both projects and both installers.
+
+#### Files / Components
+- `src/TesterLoop.Admin/Views/AdminReportDetailView.xaml`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`
+- `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`
+- `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `medial_support.txt`, `AGENTS.md`
+
+#### Important Notes
+- Presentation-only change. No SQL, RPC, grant, secret, DTO or validation rule
+  changed.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  The external WPF harness reported `BINDING_COUNT=0` for the `reportdetail`
+  mode. Published and packaged `0.14.3`:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.14.3.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.14.3.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.14.3.0`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.14.3.0`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,173,033 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,063,243 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,108,416 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,982,067 bytes
+  All four executables start, keep responsive windows titled `TesterLoop` /
+  `TesterLoop Admin`, and were stopped after the check. All four installers
+  report product version `0.14.3`.
+- Not verified live: the merged card with real report data, because it needs a
+  live operations account. Installers remain unsigned and have not been run end
+  to end.
+
+### Modification 056
+
+Date: 2026-11-08
+
+#### Changes
+- TesterLoop Mobile now derives the report build version from the installed app
+  instead of asking the tester to type it.
+  - Added `core/InstalledApp.kt` (`installedBuildLabel`) which reads
+    `PackageManager.getPackageInfo` and returns `versionName (versionCode)`, or
+    `null` when the package is not installed.
+  - The report sheet's optional `Build` text field is gone. It now shows a
+    read-only `Build version` card with the detected label, or
+    "App not installed on this device", and a note that the value is read
+    automatically.
+  - `AppVm.submitReport` no longer takes `buildLabel`. It looks up the joined
+    project's `packageName` from the dashboard state, detects the installed build
+    at submit time and sends that value as `p_build_label`.
+  - `CampaignScreen` computes the preview label with
+    `remember(packageName) { installedBuildLabel(...) }`, so the card reflects the
+    project's package and refreshes when the package changes.
+- Android version bumped to `1.2.3` (`versionCode 10203`). Windows stays at
+  `0.14.3`, because no Windows source changed for this step.
+- Refreshed `release/mobile-version.json` for `1.2.3`.
+
+#### Files / Components
+- `mobile/app/src/main/kotlin/com/testerloop/app/core/InstalledApp.kt` (new)
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/AppVm.Actions.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/campaign/ReportSheet.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/campaign/CampaignScreen.kt`
+- `mobile/app/build.gradle.kts`
+- `release/mobile-version.json`
+- `build/android/TesterLoop-Mobile-1.2.3-debug.apk`,
+  `build/android/TesterLoop-Mobile-1.2.3-release.apk`,
+  `release/TesterLoop-Mobile-1.2.3.apk`, `release/TesterLoop-Mobile-1.2.3.aab`
+- `medial_support.txt`, `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- The value is not stored or trusted by the server beyond the existing
+  `p_build_label` text field; a tester who never installed the app files a report
+  with no build label rather than a guessed one.
+- A report filed after uninstalling records no build, and the preview card says so
+  until the app is installed again.
+- The Windows tester report form is unchanged: a desktop client cannot read an
+  Android app's installed build, and the install tracker does not record a version
+  yet.
+- Verification: `:app:assembleDebug`, `:app:assembleRelease`, `:app:bundleRelease`
+  and `:app:lintDebug` succeed with 0 lint errors. `aapt` reports
+  `com.testerloop.app`, `versionCode 10203`, `versionName 1.2.3`, `minSdk 24`,
+  `targetSdk 36`, label `TesterLoop`.
+- Artifacts: `build/android/TesterLoop-Mobile-1.2.3-debug.apk` 18,880,838 bytes and
+  `build/android/TesterLoop-Mobile-1.2.3-release.apk` 13,043,980 bytes;
+  `release/TesterLoop-Mobile-1.2.3.apk` 13,043,980 bytes and
+  `release/TesterLoop-Mobile-1.2.3.aab` 12,720,862 bytes. The superseded `1.2.2`
+  files were removed.
+- Not verified on a device: the detected build label and the read-only card. No
+  Android device or accelerated emulator is available in this environment.
+- No SQL, RPC, Edge Function, grant, secret or permission changed. The release APK
+  is signed with the existing upload keystore.
+- The GitHub release for `mobile-v1.2.3` has not been published, so the in-app
+  updater still offers `1.2.2` until it is.
+
+### Modification 057
+
+Date: 2026-11-08
+
+#### Changes
+- Added a Tester project activity page to TesterLoop Admin. Selecting `View
+  activity` on any project row in a tester's detail page opens that tester's seat
+  on that project: seat state, join/opt-in/drop timestamps, last report, first
+  verified opt-in, clock start and eligibility date, install and usage summary,
+  payout state and reference, and every report that tester filed on the project.
+- Report detail navigation is now origin-aware. One shared report page is opened
+  from Feedback, from a project's activity page, or from a tester's project
+  activity, and its back button returns to the page that opened it:
+  `Back to feedback`, `Back to project` or `Back to activity`.
+- Project activity report rows and the campaign activity report rows are now
+  clickable buttons; selecting one opens the full report detail.
+- Added `AdminTesterProjectActivity` and `AdminViewModel.TesterProject.cs` with
+  open, refresh, back and report commands plus `MapTesterProject`.
+- Added the tester activity and report pages to `AdminTestersView`; added the
+  report page to `AdminCampaignsView`.
+- Split report usage helpers into `AdminViewModel.ReportDetail.Usage.cs` so the
+  report detail partial stays under 300 lines.
+- Version bumped to `0.15.0` in `AppConfig`, both projects, both installers and
+  `medial_support.txt`. Android stays at `1.2.3`.
+
+#### Files / Components
+- `src/TesterLoop.Admin/ViewModels/AdminViewModel.TesterProject.cs` (new)
+- `src/TesterLoop.Admin/ViewModels/AdminDetails.TesterProject.cs` (new)
+- `src/TesterLoop.Admin/ViewModels/AdminViewModel.ReportDetail.Usage.cs` (new)
+- `src/TesterLoop.Admin/ViewModels/AdminViewModel.ReportDetail.cs`,
+  `AdminViewModel.CampaignDetail.cs`, `AdminViewModel.Navigation.cs`,
+  `AdminViewModel.cs`
+- `src/TesterLoop.Admin/Views/AdminTesterProjectView.xaml(.cs)` (new),
+  `AdminTestersView.xaml`, `AdminTesterDetailView.xaml`,
+  `AdminCampaignsView.xaml`, `AdminCampaignActivityView.xaml`,
+  `AdminReportDetailView.xaml`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Page indices: Tester list `0`, tester detail `1`, tester project activity `2`,
+  report `3`; campaign list `0`, project detail `1`, report `2`; feedback list
+  `0`, report `1`. A side-menu change resets every page, clears the selected
+  tester project and resets the report origin to Feedback.
+- The page reuses `admin_campaign_detail`; no new RPC, table, grant or migration
+  was added. It reads the same admin-only payload operations already sees.
+- A tester activity row outside the current roster still opens: the mapper falls
+  back to the seat row's stored values and labels the missing seat `Not on
+  roster`.
+- Usage still depends on migration `028`; when the payload has no usage data the
+  page shows the same actionable migration notice as the tester detail page.
+- `AdminTesterProjectView.xaml` is 393 lines, above the 300-line guideline. Its
+  styles and templates are specific to this page, matching the existing detail
+  pages; every C# partial touched here is under 300 lines.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  The external WPF harness loaded `testerproject`, `testerdetail`,
+  `reportdetail`, `campaigndetail`, `campaignlist`, `admin` and `shell` with
+  `BINDING_COUNT=0`.
+- Windows `0.15.0` was published and packaged for both apps and both
+  architectures:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.15.0.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.15.0.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.15.0.0`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.15.0.0`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,173,315 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,063,962 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,112,178 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,985,589 bytes
+  All four installers report product version `0.15.0`.
+- Not verified live: the tester project activity page, the origin-aware back
+  button and the clickable report rows, because they need live operations data
+  and an operations account. Installers remain unsigned and have not been run end
+  to end.
+- Security: no secrets, endpoints, RPC grants or validation rules changed. The
+  page is read-only and limited to the existing admin-only dashboard payload.
+  Installers remain unsigned; `032` and the QA purge remain owner-run.
+
+### Modification 058
+
+Date: 2026-11-08
+
+#### Changes
+- Fixed the TesterLoop Admin Operations top cards showing stale zeros. The five
+  metric cards (DEVELOPERS, PENDING, ACTIVE PROJECTS, TESTERS, GROUPS) were bound
+  to computed properties, but `LoadAsync` replaced `_counts` without raising a
+  change notification. The view rendered before the dashboard request completed,
+  so the cards kept the initial `0` values even after live counts arrived.
+- `LoadAsync` now raises `DeveloperCount`, `PendingCount`, `LiveCount`,
+  `TesterCount` and `GroupCount` immediately after `_counts` is assigned, so the
+  cards update as soon as the dashboard returns.
+- Version bumped to `0.15.1` in `AppConfig`, both projects, both installers and
+  `medial_support.txt`.
+
+#### Files / Components
+- `src/TesterLoop.Admin/ViewModels/AdminViewModel.cs`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`
+- `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`
+- `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `medial_support.txt`, `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- Root cause was a missing `Raise` call, not a SQL problem. The dashboard counts
+  are returned by `admin_dashboard` as `counts.developers`, `pending`, `active`,
+  `testers` and `groups`, and deserialize correctly; the cards simply were never
+  told the values changed.
+- No SQL, RPC, DTO, grant, secret or validation rule changed.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  The external WPF harness reported `BINDING_COUNT=0` for the `admin` mode.
+- Published and packaged `0.15.1` for both apps and both architectures:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.15.1.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.15.1.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.15.1.0`,
+    PE `0x14C`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.15.1.0`,
+    PE `0x8664`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,172,914 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,063,488 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,111,988 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,985,581 bytes
+  All four executables start, keep responsive windows titled `TesterLoop` /
+  `TesterLoop Admin`, and were stopped after the check. All four installers
+  report product version `0.15.1`.
+- Not verified live: the cards with a real operations account, because no
+  operations credentials were used this round. A leftover `TesterLoopAdmin`
+  process (pid 13184) locked `build\admin-win-x64` and was stopped before
+  publishing.
+- Security: no secrets, endpoints, RPC grants or validation rules changed.
+  Installers remain unsigned and have not been run end to end.
+
+### Modification 059
+
+Date: 2026-11-08
+
+#### Changes
+- Fixed the tester project clock so the 14-day countdown starts only after 12
+  testers have confirmed opt-in, instead of counting from each tester's own
+  join or opt-in date.
+  - `tester_dashboard().mine` now joins `campaign_health` and returns
+    `days = coalesce(ch.days_banked, 0)`, plus `clock_started_at`
+    (`ch.threshold_opt_in_at`) and `confirmed_testers` (`ch.opted_in`).
+  - `campaign_health` already zeroes `days_banked` until 12 testers are actively
+    opted in and resets when the count drops below 12, so the client no longer
+    invents its own day count.
+- Windows tester workspace: `TesterCampaignDto` gained `ClockStartedAt` and
+  `ConfirmedTesters`; the MY CAMPAIGNS row shows `Clock not started` until the
+  clock begins, then `X of 14 days`.
+- Android: added `core/ProjectClock.kt` with a shared `ProjectClock` and
+  `MineItem.projectClock()`. The joined-project card, campaign hero and home
+  hero now show `Waiting for N more confirmed testers` with an empty progress
+  track before the clock starts, then `X of 14 days`; the home hero is labelled
+  `LONGEST PROJECT CLOCK`.
+- `MineItem` gained nullable `clockStartedAt` and `confirmedTesters` so a
+  pre-migration payload falls back to the previous per-tester day count instead
+  of showing a wrong zero.
+- Added `sql/migrations/034_tester_project_clock.sql` for the live project:
+  preflight for `campaign_health`, corrected `tester_dashboard`, revokes,
+  authenticated-only grant and a PostgREST schema reload.
+- Version bumped to `0.15.2` desktop and `1.2.4` (`versionCode 10204`) Android.
+- This round also commits the previously uncommitted modifications 053-058
+  (close-test project page, tester project activity, report usage split and the
+  admin count refresh).
+
+#### Files / Components
+- `sql/functions/004_queries.sql`
+- `sql/migrations/034_tester_project_clock.sql` (new)
+- `src/TesterLoop.Shared/Core/Data/Contracts.cs`
+- `src/TesterLoop.Desktop/ViewModels/TesterViewModel.cs`
+- `mobile/app/src/main/kotlin/com/testerloop/app/core/ProjectClock.kt` (new)
+- `mobile/app/src/main/kotlin/com/testerloop/app/data/api/Models.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/components/ProjectCards.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/campaign/CampaignSections.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/home/HomeScreen.kt`
+- `mobile/app/build.gradle.kts`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `release/mobile-version.json`, `release/TesterLoop-Mobile-1.2.4.apk`,
+  `release/TesterLoop-Mobile-1.2.4.aab`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- The clock is the 12th confirmed opt-in, not a per-tester streak. A tester who
+  joins on day one still sees zero until the project has 12 verified members,
+  and if the confirmed count drops below 12 the clock returns to zero for
+  everyone. That matches the Play rule and the developer view, which already
+  used `campaign_health`.
+- `campaign_health` is revoked from `anon` and `authenticated`, but
+  `tester_dashboard` is `security definer`, so the join is legal and a tester
+  still only sees their own joined projects.
+- The Android fallback is deliberate: `confirmedTesters` is nullable, and a
+  missing value means the live database has not run `034` yet, so the app keeps
+  the old behaviour rather than showing "waiting" for an established project.
+- Deployment: run `034` after `033` in the Supabase SQL Editor as `postgres`.
+  Windows `0.15.2` and Android `1.2.4` work before the migration; they simply
+  keep the previous day counts until it runs.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  Android `:app:assembleDebug`, `:app:assembleRelease`, `:app:bundleRelease` and
+  `:app:lintDebug` succeed; lint reports 0 errors, 26 warnings and 1 hint (the
+  new warnings are dependency and deprecation notices).
+- Published and packaged `0.15.2` for both apps and both architectures:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.15.2.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.15.2.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.15.2.0`,
+    PE `0x14C`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.15.2.0`,
+    PE `0x8664`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,173,079 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,063,495 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,112,220 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,985,540 bytes
+  All four installers report product version `0.15.2`.
+- Android artifacts: `build/android/TesterLoop-Mobile-1.2.4-debug.apk`
+  (19,010,311 bytes) and `build/android/TesterLoop-Mobile-1.2.4-release.apk`
+  (13,043,980 bytes); `release/TesterLoop-Mobile-1.2.4.apk` (13,043,980 bytes)
+  and `release/TesterLoop-Mobile-1.2.4.aab` (12,722,298 bytes). `aapt` reports
+  `com.testerloop.app`, `versionCode 10204`, `versionName 1.2.4`, `minSdk 24`,
+  `targetSdk 36`. `apksigner` confirms the existing upload certificate
+  (SHA-256 `12f8382ff7f25781a718d438df51eb740858635a42c4e7d3fe3bc4fba3a84fd5`)
+  and `jarsigner -verify` exits 0 for the AAB. The superseded `1.2.3` files were
+  removed.
+- Not verified live: the clock transition and the "waiting" copy, because `034`
+  has not been applied and no Android device or accelerated emulator is
+  available. SQL was reviewed statically only.
+- Security: no secrets, endpoints or RPC grants changed. `tester_dashboard`
+  stays revoked from `public` / `anon` and granted only to `authenticated`, and
+  the new fields are the tester's own campaign clock, not another account's
+  data. Installers remain unsigned and have not been run end to end.

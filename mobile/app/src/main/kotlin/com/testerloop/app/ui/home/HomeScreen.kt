@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.testerloop.app.core.firstNameOf
 import com.testerloop.app.core.initialsOf
+import com.testerloop.app.core.projectClock
 import com.testerloop.app.ui.UiState
 import com.testerloop.app.ui.components.Avatar
 import com.testerloop.app.ui.components.EmptyState
@@ -64,7 +65,9 @@ fun HomeScreen(
     onDismissError: () -> Unit
 ) {
     val name = firstNameOf(ui.tester?.displayName)
-    val bestDays = ui.mine.maxOfOrNull { it.days } ?: 0
+    val clocks = ui.mine.map { it.projectClock() }
+    val bestDays = clocks.maxOfOrNull { it.days } ?: 0
+    val anyClockStarted = clocks.any { it.started }
     val today = SimpleDateFormat("EEEE d MMMM", Locale.getDefault()).format(Date())
     val needsOptIn = ui.mine.filter { it.state == "joined" || it.optInVerification != "google_group" }
     val attentionCount = needsOptIn.size + if (!ui.usageAccess && ui.mine.isNotEmpty()) 1 else 0
@@ -103,7 +106,7 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        "BEST ACTIVE STREAK",
+                        "LONGEST PROJECT CLOCK",
                         style = MaterialTheme.typography.labelMedium,
                         color = White.copy(alpha = 0.66f)
                     )
@@ -130,10 +133,10 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        if (ui.mine.isEmpty()) {
-                            "Join a project to start your first streak."
-                        } else {
-                            "Each project needs 12 testers opted in for 14 continuous days."
+                        when {
+                            ui.mine.isEmpty() -> "Join a project to start your first project clock."
+                            !anyClockStarted -> "The 14-day clock starts when 12 testers have confirmed opt-in."
+                            else -> "Each project needs 12 testers opted in for 14 continuous days."
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = White.copy(alpha = 0.78f)
@@ -239,7 +242,7 @@ fun HomeScreen(
                         Icon(Icons.Rounded.ArrowForward, contentDescription = null, tint = Color(0xFF115E59))
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            "Keep the app installed and open it daily to protect your streak.",
+                            "Keep the app installed and open it daily for your usage checks.",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFF115E59)
                         )

@@ -20,6 +20,8 @@ public sealed partial class AdminViewModel
                 _selectedTesterRow = null;
                 Raise(nameof(SelectedTesterRow));
                 TesterDetail = null;
+                TesterProject = null;
+                _activeTesterProjectRow = null;
 
                 DeveloperPageIndex = 0;
                 _selectedDeveloperRow = null;
@@ -30,6 +32,8 @@ public sealed partial class AdminViewModel
                 _selectedFeedbackRow = null;
                 Raise(nameof(SelectedFeedbackRow));
                 ReportDetail = null;
+                _reportOrigin = ReportOrigin.Feedback;
+                Raise(nameof(ReportBackLabel));
             }
         }
     }

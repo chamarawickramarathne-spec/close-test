@@ -30,11 +30,16 @@ public sealed partial class AdminViewModel : ObservableObject
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         SaveProfileCommand = new AsyncRelayCommand(SaveProfileAsync);
         MarkTesterPaidCommand = new AsyncRelayCommand<AdminTesterCampaignRow>(MarkTesterPaidAsync);
+        OpenTesterProjectCommand = new AsyncRelayCommand<AdminTesterCampaignRow>(OpenTesterProjectAsync);
+        OpenTesterProjectReportCommand = new AsyncRelayCommand<AdminCampaignReportRow>(OpenTesterProjectReportAsync);
+        RefreshTesterProjectCommand = new AsyncRelayCommand(RefreshTesterProjectAsync);
+        BackToTesterActivityCommand = new RelayCommand(BackToTesterActivity);
         BackToTestersCommand = new RelayCommand(BackToTesters);
         BackToCampaignsCommand = new RelayCommand(BackToCampaigns);
         RefreshCampaignCommand = new AsyncRelayCommand(RefreshCampaignAsync);
         BackToDevelopersCommand = new RelayCommand(BackToDevelopers);
-        BackToFeedbackCommand = new RelayCommand(BackToFeedback);
+        OpenCampaignReportCommand = new AsyncRelayCommand<AdminCampaignReportRow>(OpenCampaignReportAsync);
+        BackFromReportCommand = new RelayCommand(BackFromReport);
         CopyReportEvidenceCommand = new RelayCommand(CopyReportEvidence);
         AttachGroupCommand = new AsyncRelayCommand(AttachGroupAsync);
         RotateGroupCommand = new AsyncRelayCommand(RotateGroupAsync);
@@ -124,6 +129,11 @@ public sealed partial class AdminViewModel : ObservableObject
         {
             var dashboard = await _service.GetAdminDashboardAsync();
             _counts = dashboard.Counts;
+            Raise(nameof(DeveloperCount));
+            Raise(nameof(PendingCount));
+            Raise(nameof(LiveCount));
+            Raise(nameof(TesterCount));
+            Raise(nameof(GroupCount));
 
             LoadPayments(dashboard);
             LoadGroupSetup(dashboard);

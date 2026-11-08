@@ -71,6 +71,8 @@ data class MineItem(
     @Json(name = "opt_in_verified_at") val optInVerifiedAt: String? = null,
     @Json(name = "opt_in_verification") val optInVerification: String? = null,
     @Json(name = "days") val days: Int = 0,
+    @Json(name = "clock_started_at") val clockStartedAt: String? = null,
+    @Json(name = "confirmed_testers") val confirmedTesters: Int? = null,
     @Json(name = "required_testers") val requiredTesters: Int = 12,
     @Json(name = "campaign_state") val campaignState: String? = null,
     @Json(name = "joined_at") val joinedAt: String? = null,

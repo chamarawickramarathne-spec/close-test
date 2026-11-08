@@ -1,6 +1,6 @@
 {
-  "versionCode": 10203,
-  "versionName": "1.2.3",
-  "apk": "TesterLoop-Mobile-1.2.3.apk",
-  "notes": "Report build version is detected from the installed app instead of being typed."
+  "versionCode": 10204,
+  "versionName": "1.2.4",
+  "apk": "TesterLoop-Mobile-1.2.4.apk",
+  "notes": "The 14-day project clock starts only after 12 testers confirm opt-in."
 }

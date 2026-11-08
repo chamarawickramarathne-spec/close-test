@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.testerloop.app.core.formatDate
 import com.testerloop.app.core.humanState
+import com.testerloop.app.core.projectClock
 import com.testerloop.app.data.api.AvailableItem
 import com.testerloop.app.data.api.MineItem
 import com.testerloop.app.data.api.ReportItem
@@ -34,6 +35,7 @@ fun JoinedProjectCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val clock = item.projectClock()
     TlCard(modifier = modifier, onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
@@ -56,15 +58,18 @@ fun JoinedProjectCard(
             StatusPill(humanState(item.state), stateTone(item.state))
         }
         Spacer(Modifier.height(14.dp))
-        ProgressTrack(progress = item.days / 14f, color = Teal)
+        ProgressTrack(progress = clock.progress, color = Teal)
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "${item.days} of 14 days",
+                if (clock.started) clock.daysLabel else clock.waitingLabel,
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.width(8.dp))
             Text(
                 if (item.optInVerification == "google_group") "Verified" else "Confirm opt-in",
                 style = MaterialTheme.typography.bodySmall,

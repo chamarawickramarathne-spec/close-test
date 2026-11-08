@@ -193,5 +193,9 @@
         <TabItem Header="Project detail">
             <views:AdminCampaignDetailView />
         </TabItem>
+
+        <TabItem Header="Project report detail">
+            <views:AdminReportDetailView />
+        </TabItem>
     </TabControl>
 </UserControl>

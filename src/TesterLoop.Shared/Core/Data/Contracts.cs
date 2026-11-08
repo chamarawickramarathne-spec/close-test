@@ -107,6 +107,8 @@ public sealed record TesterCampaignDto(
     [property: JsonPropertyName("opt_in_verified_at")] DateTime? OptInVerifiedAt,
     [property: JsonPropertyName("opt_in_verification")] string? OptInVerification,
     [property: JsonPropertyName("days")] int Days,
+    [property: JsonPropertyName("clock_started_at")] DateTime? ClockStartedAt,
+    [property: JsonPropertyName("confirmed_testers")] int ConfirmedTesters,
     [property: JsonPropertyName("required_testers")] int RequiredTesters);
 
 public sealed record TesterAvailableDto(

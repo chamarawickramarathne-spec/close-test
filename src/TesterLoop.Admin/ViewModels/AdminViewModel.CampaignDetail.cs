@@ -16,6 +16,8 @@ public sealed partial class AdminViewModel
 
     public AsyncRelayCommand RefreshCampaignCommand { get; private set; } = null!;
 
+    public AsyncRelayCommand<AdminCampaignReportRow> OpenCampaignReportCommand { get; private set; } = null!;
+
     public AdminCampaignDetail? CampaignDetail
     {
         get => _campaignDetail;
@@ -71,6 +73,9 @@ public sealed partial class AdminViewModel
     private Task RefreshCampaignAsync()
         => _campaignDetailId == Guid.Empty ? Task.CompletedTask : OpenCampaignAsync(_campaignDetailId);
 
+    private Task OpenCampaignReportAsync(AdminCampaignReportRow row)
+        => OpenReportAsync(row.Id, ReportOrigin.Campaign);
+
     private static AdminCampaignDetail MapCampaignDetail(AdminCampaignDetailDto dto)
     {
         var campaign = dto.Campaign;
@@ -119,30 +124,7 @@ public sealed partial class AdminViewModel
         var reports = new ObservableCollection<AdminCampaignReportRow>();
         foreach (var row in dto.Reports ?? [])
         {
-            var usage = row.UsageSnapshot is null
-                ? null
-                : BuildUsageLabels(row.UsageSnapshot, true);
-            var detail = string.Join(
-                " - ",
-                new[] { row.BuildLabel, row.Device }
-                    .Where(value => !string.IsNullOrWhiteSpace(value)));
-
-            reports.Add(new AdminCampaignReportRow(
-                row.Id,
-                row.Title,
-                row.TesterName,
-                Label(row.Severity),
-                SeverityTone(row.Severity),
-                Label(row.Status),
-                StatusTone(row.Status),
-                row.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                detail.Length == 0 ? "No device or build" : detail,
-                Preview(row.Body),
-                row.Body,
-                string.IsNullOrWhiteSpace(row.EvidenceUrl) ? "No evidence" : row.EvidenceUrl,
-                !string.IsNullOrWhiteSpace(row.EvidenceUrl),
-                usage is null ? "Usage not captured" : $"{usage.State} - {usage.Days}",
-                usage?.Tone ?? "muted"));
+            reports.Add(MapCampaignReport(row));
         }
 
         var audit = new ObservableCollection<AuditRow>();
@@ -197,6 +179,34 @@ public sealed partial class AdminViewModel
             Reports = reports,
             Audit = audit,
         };
+    }
+
+    private static AdminCampaignReportRow MapCampaignReport(AdminCampaignReportDto row)
+    {
+        var usage = row.UsageSnapshot is null
+            ? null
+            : BuildUsageLabels(row.UsageSnapshot, true);
+        var detail = string.Join(
+            " - ",
+            new[] { row.BuildLabel, row.Device }
+                .Where(value => !string.IsNullOrWhiteSpace(value)));
+
+        return new AdminCampaignReportRow(
+            row.Id,
+            row.Title,
+            row.TesterName,
+            Label(row.Severity),
+            SeverityTone(row.Severity),
+            Label(row.Status),
+            StatusTone(row.Status),
+            row.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+            detail.Length == 0 ? "No device or build" : detail,
+            Preview(row.Body),
+            row.Body,
+            string.IsNullOrWhiteSpace(row.EvidenceUrl) ? "No evidence" : row.EvidenceUrl,
+            !string.IsNullOrWhiteSpace(row.EvidenceUrl),
+            usage is null ? "Usage not captured" : $"{usage.State} - {usage.Days}",
+            usage?.Tone ?? "muted");
     }
 
     private static string Date(DateTime? value)

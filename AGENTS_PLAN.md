@@ -1443,4 +1443,95 @@ Completed:
 Pending:
 - Owner to run `033_fix_admin_campaign_detail.sql` and
   `032_daily_install_history.sql` in Supabase.
-- Confirm the developer new-project form against the live package list.
+- Confirm the developer new-project form against the live package list.## Release 0.14.3 desktop - merged report usage cards (2026-11-08)
+
+Completed:
+- Merged the Admin report detail `INSTALL AND USAGE AT FILING` and
+  `CURRENT USAGE` cards into one `INSTALL AND USAGE` card with `AT FILING` and
+  `LIVE NOW` columns, and moved `DAILY INSTALL CHECKS AT FILING` beside it.
+- Presentation-only; no SQL, RPC, DTO or validation change.
+- Built `0.14.3` for x86/x64 main + admin, four installers, launch smoke test on
+  the published x64 builds. Harness reported `BINDING_COUNT=0` for
+  `reportdetail`.
+
+Pending:
+- Verify the merged card with live report data and an operations account.
+
+## Release 1.2.3 mobile - report build auto-detected (2026-11-08)
+
+Completed:
+- Added `core/InstalledApp.kt`; the report sheet no longer asks for a build and
+  shows the detected `versionName (versionCode)` read-only.
+- `AppVm.submitReport` detects the build from the joined project's package at
+  submit time and sends it as `p_build_label`, or nothing when the app is not
+  installed.
+- Android bumped to `1.2.3` (`versionCode 10203`); signed APK and AAB rebuilt and
+  copied to `build/android` and `release/`; `release/mobile-version.json`
+  updated.
+
+Pending:
+- Publish GitHub release `mobile-v1.2.3` so the in-app updater offers it.
+- Verify the detected build label and read-only card on a real tester device.
+
+## Release 0.15.0 desktop - tester project activity (2026-11-08)
+
+Completed:
+- Added `AdminTesterProjectActivity`, `AdminViewModel.TesterProject.cs` and
+  `AdminTesterProjectView` with open, refresh and back commands. The page shows
+  the tester's seat state, timeline, install and usage evidence, payout record
+  and every report filed on that project.
+- Added origin-aware report navigation: one report page with `Back to feedback`,
+  `Back to project` and `Back to activity`, plus a resettable origin when the
+  side menu changes.
+- Campaign activity report rows and tester project activity report rows are now
+  clickable buttons.
+- Extended `AdminTestersView` with activity/report tabs (indices 2 and 3) and
+  `AdminCampaignsView` with a project report tab (index 2).
+- Split report usage helpers into `AdminViewModel.ReportDetail.Usage.cs`; both
+  report partials are under 300 lines.
+- Windows bumped to `0.15.0`; both apps published for x86/x64 and both installers
+  rebuilt.
+
+Pending:
+- Verify the activity page, the origin-aware back button and clickable report
+  rows against live operations data.
+- Run the new page with migration `028` applied so the usage section is live.
+
+## Release 0.15.1 desktop - admin dashboard counts refresh (2026-11-08)
+
+Completed:
+- Fixed the Operations top cards showing stale zeros. `LoadAsync` now raises
+  `DeveloperCount`, `PendingCount`, `LiveCount`, `TesterCount` and `GroupCount`
+  after assigning `_counts`, so the five metric cards reflect the dashboard
+  payload as soon as it arrives.
+- Windows bumped to `0.15.1`; both apps published for x86/x64 and both installers
+  rebuilt.
+
+Pending:
+- Verify the top cards with a live operations account after sign-in and refresh.
+
+## Release 0.15.2 desktop / 1.2.4 Android - project clock (2026-11-08)
+
+Completed:
+- `tester_dashboard().mine` now takes `days`, `clock_started_at` and
+  `confirmed_testers` from `campaign_health`, so the 14-day clock starts only
+  after 12 testers confirm opt-in and resets when the count drops below 12.
+- Windows tester MY CAMPAIGNS shows `Clock not started` until the clock begins.
+- Android added a shared `ProjectClock`; joined-project, campaign and home cards
+  show `Waiting for N more confirmed testers` with an empty progress track, then
+  `X of 14 days`. Pre-migration payloads fall back to the old per-tester count.
+- Added `sql/migrations/034_tester_project_clock.sql` for the live project.
+- Windows `0.15.2` published for x86/x64 with both installers; Android `1.2.4`
+  (`versionCode 10204`) signed APK and AAB built and copied to `release/`.
+- Committed the previously uncommitted modifications 053-058 with this round.
+
+Pending:
+- Apply migration `034` after `033` and verify the clock transition on live data.
+- Device-verify the Android clock copy; no device or accelerated emulator is
+  available here.
+
+## Still owed from earlier rounds
+
+- Supabase migrations `017`-`034` run by the owner, plus the QA purge in
+  `sql/maintenance/purge_test_accounts.sql`.
+- Windows installers remain unsigned and have not been run end to end.

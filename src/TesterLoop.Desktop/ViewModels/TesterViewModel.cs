@@ -236,7 +236,9 @@ public sealed partial class TesterViewModel : ObservableObject
                     campaign.GroupName ?? string.Empty,
                     status,
                     optedIn && verified ? "good" : "warn",
-                    campaign.OptedInAt is null ? "Clock not started" : $"{campaign.Days} days opted in",
+                    campaign.ClockStartedAt is null && campaign.Days == 0
+                        ? "Clock not started"
+                        : $"{campaign.Days} of {AppConfig.RequiredDays} days",
                     $"Seat {campaign.SeatNumber:00}",
                     campaign.PlayOptInUrl,
                     optedIn ? "Opt out" : "Leave project",

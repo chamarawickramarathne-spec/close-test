@@ -167,10 +167,9 @@ begin
         'opted_in_at', s.opted_in_at,
         'opt_in_verified_at', s.opt_in_verified_at,
         'opt_in_verification', s.opt_in_verification,
-        'days', case
-          when s.opted_in_at is null then 0
-          else floor(extract(epoch from (now() - s.opted_in_at)) / 86400)::int
-        end,
+        'days', coalesce(ch.days_banked, 0),
+        'clock_started_at', ch.threshold_opt_in_at,
+        'confirmed_testers', coalesce(ch.opted_in, 0),
         'required_testers', c.required_testers,
         'usage_status', (
           select jsonb_build_object(
@@ -188,6 +187,7 @@ begin
       from public.campaign_seats s
       join public.campaigns c on c.id = s.campaign_id
       left join public.google_groups g on g.id = c.group_id
+      left join public.campaign_health ch on ch.campaign_id = c.id
       where s.tester_id = v_tester
         and s.state in ('joined', 'opted_in')
     ), '[]'::jsonb),

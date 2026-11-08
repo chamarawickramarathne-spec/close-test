@@ -7,6 +7,35 @@
         <Style x:Key="DetailEyebrow" TargetType="TextBlock" BasedOn="{StaticResource Eyebrow}">
             <Setter Property="FontSize" Value="9.5" />
         </Style>
+        <Style x:Key="ReportRowButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="row"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource LineBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="0,8">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="row" Property="Background"
+                                        Value="{StaticResource SurfaceAltBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="row" Property="Opacity" Value="0.75" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <StackPanel>
@@ -39,9 +68,11 @@
                 <ItemsControl ItemsSource="{Binding CampaignDetail.Reports}" Margin="0,2,0,0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1"
-                                    Padding="0,8">
-                                <Grid ToolTip="{Binding Tooltip}">
+                            <Button Style="{StaticResource ReportRowButton}"
+                                    ToolTip="{Binding Tooltip}"
+                                    Command="{Binding DataContext.OpenCampaignReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="110" />
@@ -125,7 +156,7 @@
                                                Style="{StaticResource Caption}" FontSize="10"
                                                VerticalAlignment="Center" TextAlignment="Right" />
                                 </Grid>
-                            </Border>
+                            </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

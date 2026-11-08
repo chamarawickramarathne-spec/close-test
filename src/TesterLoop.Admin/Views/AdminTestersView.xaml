@@ -185,5 +185,13 @@
         <TabItem Header="Tester detail">
             <views:AdminTesterDetailView />
         </TabItem>
+
+        <TabItem Header="Tester project activity">
+            <views:AdminTesterProjectView />
+        </TabItem>
+
+        <TabItem Header="Tester report detail">
+            <views:AdminReportDetailView />
+        </TabItem>
     </TabControl>
 </UserControl>

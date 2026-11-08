@@ -4745,3 +4745,30 @@ Date: 2026-11-08
   tag URL return HTTP 200, and `docs/index.html` is still ASCII-only with no BOM.
 - The desktop release tag is `desktop-v0.16.0`; mobile releases use
   `mobile-v*`, so the two do not collide.
+
+### Modification 067
+
+Date: 2026-11-08
+
+#### Changes
+- Removed the `Operations app` card from the website download section. The
+  public page now offers only the two developer/tester installers; TesterLoop
+  Admin is no longer advertised on the site.
+- The download section uses a new two-column `.grid-2` layout instead of
+  `.grid-3`, so the two cards are centred as a pair and collapse to one column on
+  narrow screens.
+- Removed the `All downloads` button that lived on the deleted card, and dropped
+  the sentence that told visitors the operations app installs separately.
+
+#### Files / Components
+- `docs/index.html`, `docs/site.css`
+- `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- Documentation and site only. No application source changed, so no build and no
+  version bump (`0.16.0` stays).
+- The admin installers remain attached to `desktop-v0.16.0`; they are simply not
+  linked from the public page. The footer `Downloads` link still opens the release
+  tag, so they are reachable from there.
+- Verified: `docs/index.html` has no `Operations app` text, tags balance, and the
+  file is ASCII-only with no BOM.

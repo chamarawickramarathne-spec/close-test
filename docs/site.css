@@ -415,6 +415,12 @@ h2 {
   font-size: 17px;
 }
 
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -782,6 +788,7 @@ details p {
     padding-top: 48px;
   }
 
+  .grid-2,
   .grid-3,
   .honest {
     grid-template-columns: 1fr;

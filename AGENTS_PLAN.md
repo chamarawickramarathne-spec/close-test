@@ -1635,8 +1635,9 @@ Completed:
   no build and no version bump (`0.16.0` stays).
 - Mobile APK/AAB removed from Git tracking; `release/` is ignored.
 - GitHub release `desktop-v0.16.0` published with all four Windows installers.
-- `docs/index.html` gained a `#download` section with direct x64/x86 links and an
-  "All downloads" tag link; header and footer links point at it.
+- `docs/index.html` gained a `#download` section with direct x64/x86 links; the
+  header button points at it and the footer "Downloads" link opens the release
+  tag. The operations-app card was removed in Modification 067.
 
 Pending (owner):
 - Publish Pages and open the live URL.

@@ -1633,11 +1633,15 @@ Completed:
   publish it.
 - All `docs/` files ASCII-only, no BOM, balanced tags. No app source changed, so
   no build and no version bump (`0.16.0` stays).
+- Mobile APK/AAB removed from Git tracking; `release/` is ignored.
+- GitHub release `desktop-v0.16.0` published with all four Windows installers.
+- `docs/index.html` gained a `#download` section with direct x64/x86 links and an
+  "All downloads" tag link; header and footer links point at it.
 
 Pending (owner):
 - Publish Pages and open the live URL.
-- Support email set to `primesentinel.kandy@gmail.com` across `docs/` (was a
-  placeholder until Modification 065).
+- Bump the `#download` links and footer link in `docs/index.html` with each new
+  desktop release.
 - Run the Lemon Squeezy activation flow using the answer sheet.
 - Then follow the payment go-live steps already listed above (secrets, deploys,
   webhook, `035`, test-mode check).

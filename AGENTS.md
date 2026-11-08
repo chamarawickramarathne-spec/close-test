@@ -4701,3 +4701,47 @@ Date: 2026-11-08
   must confirm it is monitored before the Lemon Squeezy application, because both
   Lemon Squeezy and customers use it.
 - No secret was added. All files remain ASCII-only with no BOM.
+
+### Modification 066
+
+Date: 2026-11-08
+
+#### Changes
+- Removed the Android build artifacts from Git tracking:
+  `release/TesterLoop-Mobile-1.2.6.apk` and
+  `release/TesterLoop-Mobile-1.2.6.aab`. The files stay on disk for the Play
+  upload but are no longer versioned.
+- `.gitignore` now ignores the whole `release/` folder. The earlier
+  `!release/*.apk` and `!release/*.aab` exceptions were removed, because Play
+  distributes the mobile builds and the repository should not carry binaries.
+- Published GitHub release `desktop-v0.16.0` ("TesterLoop Desktop 0.16.0") with
+  all four Windows installers: `TesterLoop-Setup-x64.exe`,
+  `TesterLoop-Setup-x86.exe`, `TesterLoop-Admin-Setup-x64.exe` and
+  `TesterLoop-Admin-Setup-x86.exe`. Stable asset names match the installer
+  filenames, so the download URLs only change with the tag.
+- The website now has a `#download` section on `docs/index.html` with direct
+  64-bit and 32-bit installer buttons plus an "All downloads" link to the
+  release tag. The header button points at `#download`, the footer "Downloads"
+  link points at the tag, and `docs/README.md` records that those links must be
+  bumped with each desktop release.
+
+#### Files / Components
+- `.gitignore`
+- `docs/index.html`, `docs/README.md`
+- Removed from Git: `release/TesterLoop-Mobile-1.2.6.apk`,
+  `release/TesterLoop-Mobile-1.2.6.aab`
+- GitHub release `desktop-v0.16.0`
+- `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- The release was created from the existing `0.16.0` installers in `build/`;
+  no application source changed, so the version stays `0.16.0`.
+- Release assets are unsigned, so SmartScreen may warn on first run. The site
+  says so instead of implying a signed installer.
+- The mobile APK/AAB are no longer recoverable from Git history changes made from
+  this point, but earlier commits still contain the 1.2.6 binaries. Removing that
+  history would need a rewrite and is not done.
+- Verified: all four assets are attached, the two direct installer URLs and the
+  tag URL return HTTP 200, and `docs/index.html` is still ASCII-only with no BOM.
+- The desktop release tag is `desktop-v0.16.0`; mobile releases use
+  `mobile-v*`, so the two do not collide.

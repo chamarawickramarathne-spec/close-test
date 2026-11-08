@@ -21,9 +21,8 @@ captures/
 
 /cmd.exe.quarantine
 
-# Android signing material and committed release artifacts
+# Android signing material. Builds are distributed through Google Play, not git.
 .keys/
 keystore.properties
-!release/
-!release/*.apk
-!release/*.aab
+release/
+

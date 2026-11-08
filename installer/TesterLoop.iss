@@ -1,5 +1,5 @@
 #define AppName "TesterLoop"
-#define AppVersion "0.14.1"
+#define AppVersion "0.14.2"
 #define AppPublisher "TesterLoop"
 #define AppExe "TesterLoop.exe"
 

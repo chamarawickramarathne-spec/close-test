@@ -4,7 +4,7 @@ public static class AppConfig
 {
     public const string SupabaseUrl = "https://omlhddzyitzjbcgrxvbn.supabase.co";
     public const string SupabasePublishableKey = "sb_publishable_muvojumpOQ52sZirZKA4Lw_6BcNVb8G";
-    public const string AppVersion = "0.14.1";
+    public const string AppVersion = "0.14.2";
 
     public const int SeatCap = 15;
     public const int RequiredDays = 14;

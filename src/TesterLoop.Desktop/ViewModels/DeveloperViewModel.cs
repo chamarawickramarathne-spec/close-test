@@ -119,8 +119,8 @@ public sealed partial class DeveloperViewModel : ObservableObject
         : Money(SelectedPackage.AmountCents);
 
     public string SelectedPackageDetail => SelectedPackage is null
-        ? "Choose a package to see its fee and tester payout."
-        : $"Project fee {Money(SelectedPackage.AmountCents)} \u00B7 tester payout {Money(SelectedPackage.TesterFeeCents)}";
+        ? "Choose a package to see its project fee."
+        : $"Project fee {Money(SelectedPackage.AmountCents)}";
 
     private static string Money(int cents)
         => "$" + (cents / 100m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);

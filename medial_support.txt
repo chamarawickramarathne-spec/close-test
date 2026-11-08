@@ -1,6 +1,6 @@
 TESTERLOOP - MEDIA & MARKETING SUPPORT
 Last updated: 2026-11-08
-Application version: 0.14.1 desktop (Windows x86 / x64, main app + admin app)
+Application version: 0.14.2 desktop (Windows x86 / x64, main app + admin app)
                    1.2.2 Android tester app (signed APK + AAB)
 
 ==========================================================
@@ -458,7 +458,7 @@ NOTES FOR THE DESIGNER
   warning #B45309, danger #DC2626.
 - Typography: Segoe UI Variable for interface, Cascadia Mono for addresses.
 - Accounts and data: Supabase-backed email/password sign-in; no Google or social
-  sign-in is offered in 0.14.1 desktop or 1.2.2 Android. One account can choose
+  sign-in is offered in 0.14.2 desktop or 1.2.2 Android. One account can choose
   Developer or Tester at sign-in, and the missing profile is created server-side on
   first use. TesterLoop Admin is a separate install with its own stable x86/x64
   installers, a left-hand menu, per-tester, per-developer and per-project detail

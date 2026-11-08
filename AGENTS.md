@@ -1594,7 +1594,7 @@ Date: 2026-11-02
 - Backfill uses the email local part with non-slug characters replaced by `-`
   and leading/trailing separators trimmed; an empty result becomes
   `group-<first 8 of id>`. A name that was already correct is unchanged.
-- If `016` has not run, the admin group list shows `—` for the name and the
+- If `016` has not run, the admin group list shows `â€”` for the name and the
   developer/tester JSON omits `group_name`; the client tolerates a missing name
   and refuses to open a group page rather than guessing.
 - Deployment order is now `008` -> `009` -> `010` -> `011` -> `012` -> `013` ->
@@ -3948,3 +3948,53 @@ Date: 2026-11-08
   available, so `033` was not executed here.
 - Still owed from earlier rounds: `032_daily_install_history.sql` and the QA purge
   in `sql/maintenance/purge_test_accounts.sql`.
+
+### Modification 054
+
+Date: 2026-11-08
+
+#### Changes
+- Removed the tester payout amount from the developer workspace. The new-project
+  package summary now reads `Project fee $15.00` only; it no longer says
+  `tester payout $0.50`.
+- The package picker still shows the package name, and the fee shown is the fee
+  copied onto the project at creation, so a developer can still choose a package
+  and know what they pay.
+- TesterLoop Admin is unchanged: operations still sees each package's project fee
+  and tester payout on `Payment Packages`, and tester payout amounts on the
+  tester and developer detail pages.
+- Version bumped to `0.14.2` in `AppConfig`, both projects, both installers and
+  `medial_support.txt`. Android stays at `1.2.2`.
+
+#### Files / Components
+- `src/TesterLoop.Desktop/ViewModels/DeveloperViewModel.cs`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Presentation-only change. No SQL, RPC, Edge Function, grant, secret or data
+  model changed. `list_payment_packages` still returns `tester_fee_cents`; the
+  developer client simply no longer displays it.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  A repository search finds no remaining developer-facing use of
+  `TesterFeeCents` or `tester payout`.
+- Published and packaged `0.14.2` for both apps and both architectures:
+  - `build/win-x86/TesterLoop.exe` 141,824 bytes, file `0.14.2.0`, PE `0x14C`
+  - `build/win-x64/TesterLoop.exe` 172,544 bytes, file `0.14.2.0`, PE `0x8664`
+  - `build/admin-win-x86/TesterLoopAdmin.exe` 141,824 bytes, file `0.14.2.0`
+  - `build/admin-win-x64/TesterLoopAdmin.exe` 172,544 bytes, file `0.14.2.0`
+  - `build/win-x86/TesterLoop-Setup-x86.exe` 45,173,108 bytes
+  - `build/win-x64/TesterLoop-Setup-x64.exe` 50,063,342 bytes
+  - `build/admin-win-x86/TesterLoop-Admin-Setup-x86.exe` 45,108,009 bytes
+  - `build/admin-win-x64/TesterLoop-Admin-Setup-x64.exe` 49,982,344 bytes
+  All four installers report product version `0.14.2`; the published x64 app
+  starts, keeps a responsive `TesterLoop` window, and was stopped after the check.
+- A leftover `TesterLoopAdmin` process (pid 7612, running from
+  `build\admin-win-x64`) locked the admin x64 publish; it was stopped and the
+  publish re-ran cleanly.
+- Not verified: the developer new-project summary with a live package list,
+  because no live developer account was used this round. Installers remain
+  unsigned and have not been run end to end.

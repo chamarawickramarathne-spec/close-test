@@ -1431,3 +1431,16 @@ Completed:
 Pending:
 - Owner must run `033_fix_admin_campaign_detail.sql` in Supabase after `031`.
 - Verify the project page opens with real data once `033` is applied.
+## Release 0.14.2 desktop - developer payout hidden (2026-11-08)
+
+Completed:
+- Developer new-project package summary shows the project fee only; tester payout
+  is no longer displayed anywhere in TesterLoop.
+- TesterLoop Admin unchanged: package fee and tester payout still visible to
+  operations.
+- Built `0.14.2` for x86/x64 main + admin, four installers, x64 smoke test.
+
+Pending:
+- Owner to run `033_fix_admin_campaign_detail.sql` and
+  `032_daily_install_history.sql` in Supabase.
+- Confirm the developer new-project form against the live package list.

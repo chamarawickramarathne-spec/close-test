@@ -1339,7 +1339,7 @@ Pending:
   purge (`sql/maintenance/purge_test_accounts.sql`).
 - Installers remain unsigned and have not been run end to end.
 
-## Latest - 0.14.1 desktop / 1.2.1 Android (daily install history)
+## Previous - 0.14.1 desktop / 1.2.1 Android (daily install history)
 
 Completed:
 - Added `tester_app_install_daily` (one install check per tester, project and day)
@@ -1381,3 +1381,39 @@ Pending:
 - Still owed from earlier rounds: `017`-`032` migrations and the QA purge
   (`sql/maintenance/purge_test_accounts.sql`).
 - Installers remain unsigned and have not been run end to end.
+## Latest - 0.14.1 desktop / 1.2.2 Android (signed release + in-app updater)
+
+Completed:
+- Created the TesterLoop upload keystore at `.keys/testerloop-upload.jks` with
+  credentials in `.keys/credentials.txt`. Both are gitignored, and
+  `mobile/keystore.properties` carries the local signing values.
+- `mobile/app/build.gradle.kts` now creates a release signing config only when
+  `keystore.properties` exists, so clones without the keystore still build an
+  unsigned release.
+- Signed `TesterLoop-Mobile-1.2.2.apk` and `.aab` are committed under `release/`
+  and attached to the `mobile-v1.2.2` GitHub release with `mobile-version.json`.
+- Added `core/AppUpdater.kt`: reads the latest public GitHub release, prefers the
+  `mobile-version.json` manifest, downloads the APK to the cache and launches the
+  system installer through a `FileProvider`. Handles the missing
+  "install unknown apps" permission by opening the settings page.
+- Added `ui/AppVm.Update.kt`, update fields in `UiState`, the Profile APP UPDATE
+  card and silent checks after sign-in and after the first dashboard load.
+- Manifest gained `REQUEST_INSTALL_PACKAGES` and the FileProvider; new
+  `res/xml/file_paths.xml` exposes only `cacheDir/updates`.
+- Created the public repo `chamarawickramarathne-spec/close-test`, pushed `main`
+  and published release `mobile-v1.2.2`.
+- Bumped Android to `1.2.2` (`versionCode 10202`). Windows stays `0.14.1`.
+
+Pending:
+- Owner decision on removing the mobile update feature from git; when removed,
+  delete `AppUpdater`, `AppVm.Update.kt`, the Profile card, the manifest
+  permission/FileProvider, `file_paths.xml` and the published
+  `mobile-version.json` together.
+- Owner must run `032_daily_install_history.sql` after `031` (and after `019`) in
+  the Supabase SQL Editor as `postgres`. `032` was reviewed statically only.
+- Verify the update check, download, install prompt, daily install check and report
+  install window on a real tester device; no device or accelerated emulator is
+  available here.
+- Still owed from earlier rounds: `017`-`032` migrations and the QA purge
+  (`sql/maintenance/purge_test_accounts.sql`).
+- Windows installers remain unsigned and have not been run end to end.

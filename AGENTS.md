@@ -3821,3 +3821,89 @@ Date: 2026-11-08
   are unchanged. Installers remain unsigned and have not been run end to end.
 - Still owed from earlier rounds: migrations `017`-`032` and the QA purge in
   `sql/maintenance/purge_test_accounts.sql`.
+
+### Modification 052
+
+Date: 2026-11-08
+
+#### Changes
+- Signed the Android release for the first time and shipped it as commit + GitHub
+  release.
+  - Generated an upload keystore at `.keys/testerloop-upload.jks` (alias
+    `testerloop`, RSA 2048, 10000 days, DN `CN=TesterLoop, OU=Mobile,
+    O=TesterLoop, L=Colombo, C=LK`); passwords are in `.keys/credentials.txt`.
+  - `mobile/app/build.gradle.kts` loads `mobile/keystore.properties` and creates a
+    `release` signing config only when that file exists, so a clone without the
+    keystore still builds an unsigned release instead of failing.
+  - `.keys/` and `keystore.properties` are gitignored; `release/*.apk` and
+    `release/*.aab` are re-included so the signed artifacts can be committed.
+- Added in-app update checks to TesterLoop Mobile.
+  - `core/AppUpdater.kt` reads
+    `https://api.github.com/repos/chamarawickramarathne-spec/close-test/releases/latest`,
+    prefers the `mobile-version.json` asset (`versionCode` / `versionName`) and
+    falls back to parsing the tag when the manifest is missing.
+  - A newer `versionCode` downloads the APK to `cacheDir/updates` with a progress
+    callback, then opens the Android installer through a `FileProvider`.
+  - When "install unknown apps" is off, the app opens
+    `Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES` and asks the tester to retry.
+  - Profile has a new APP UPDATE card: installed version, update banner, download
+    progress, Download and install, Check for updates, inline error and notice.
+  - The check runs automatically once per launch after the dashboard loads and
+    after a successful sign-in.
+- Manifest: added `REQUEST_INSTALL_PACKAGES`, the
+  `${applicationId}.fileprovider` FileProvider and `res/xml/file_paths.xml`
+  (`cache-path` `updates/`).
+- Repository: created public GitHub repo
+  `chamarawickramarathne-spec/close-test`, pushed `main`, and published release
+  `mobile-v1.2.2` with `TesterLoop-Mobile-1.2.2.apk` (13,043,980 bytes),
+  `TesterLoop-Mobile-1.2.2.aab` (12,720,229 bytes) and `mobile-version.json`.
+- Android bumped to `1.2.2` (`versionCode 10202`). Windows stays at `0.14.1`.
+
+#### Files / Components
+- `.keys/testerloop-upload.jks`, `.keys/credentials.txt` (not in git)
+- `mobile/keystore.properties` (not in git)
+- `.gitignore`
+- `mobile/app/build.gradle.kts`
+- `mobile/app/src/main/kotlin/com/testerloop/app/core/AppUpdater.kt` (new),
+  `core/AppConfig.kt`
+- `mobile/app/src/main/kotlin/com/testerloop/app/ui/AppVm.Update.kt` (new),
+  `ui/AppVm.kt`, `ui/AppVm.Auth.kt`, `ui/UiState.kt`, `ui/profile/ProfileScreen.kt`,
+  `MainActivity.kt`
+- `mobile/app/src/main/AndroidManifest.xml`, `res/xml/file_paths.xml` (new)
+- `release/TesterLoop-Mobile-1.2.2.apk`, `release/TesterLoop-Mobile-1.2.2.aab`,
+  `release/mobile-version.json`
+- `build/android/TesterLoop-Mobile-1.2.2-debug.apk`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- The upload keystore is the only way to sign a future build as the same app. It
+  is deliberately outside git; back it up. Losing it means a new install identity
+  (or a Play upload-key reset), not a silent re-sign.
+- The updater reads a public release anonymously. If this repository ever becomes
+  private, the updater stops working and must be replaced (signed manifest hosted
+  elsewhere) or removed.
+- The update check is a convenience, not a security control. It only accepts the
+  `api.github.com` release for this repository and only installs a
+  `application/vnd.android.package-archive` through the system installer, so the
+  user still confirms the install.
+- Release naming stays stable-ish per asset name (`TesterLoop-Mobile-<version>`),
+  while the tag carries the version (`mobile-v1.2.2`). The updater prefers the
+  manifest, so a renamed asset does not break version detection.
+- Planned removal: the owner wants the mobile update feature removed from git in a
+  later round. When that happens, remove `AppUpdater`, `AppVm.Update.kt`, the
+  Profile card, the manifest permission/FileProvider and `file_paths.xml`
+  together, and stop publishing `mobile-version.json`. The keystore and signing
+  config stay, because signed builds are still needed.
+- Verification: `:app:assembleDebug`, `:app:assembleRelease`, `:app:bundleRelease`
+  and `:app:lintDebug` succeed with 0 lint errors. `apksigner` reports the APK
+  signed with `CN=TesterLoop` (cert SHA-256
+  `12f8382ff7f25781a718d438df51eb740858635a42c4e7d3fe3bc4fba3a84fd5`), `aapt`
+  reports `com.testerloop.app` / `versionCode 10202` / `versionName 1.2.2` /
+  `minSdk 24` / `targetSdk 36`, and `jarsigner -verify` exits 0 for the AAB.
+  The published release lists all three assets and `mobile-version.json` returns
+  `versionCode 10202`, so a 1.2.2 client correctly reports no update.
+- Not verified on a device: the update check, the download, the install prompt and
+  the post-install restart. No Android device or accelerated emulator is available
+  in this environment.
+- `032_daily_install_history.sql` is still not applied to the live Supabase
+  project; that remains owner-run.

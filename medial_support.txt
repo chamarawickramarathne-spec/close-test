@@ -178,6 +178,11 @@ Main features
 - Mobile device type. TesterLoop Mobile reports the phone's manufacturer and model
   automatically. Testers see it read-only on the Windows profile and workspace, and
   desktop bug reports use it by default.
+- Signed Android builds with in-app updates. TesterLoop Mobile ships as a signed
+  APK from the project's public GitHub release. The Profile page checks for a newer
+  version, shows download progress and hands the file to the Android installer; when
+  "install unknown apps" is off, the app opens that setting and asks the tester to
+  try again.
 - Google Group opens on join. Pressing Join adds the seat and launches the
   project's Google Group page in the default browser, using the URL name operations
   recorded for that group (`https://groups.google.com/g/<group-name>`), not a guess

@@ -36,5 +36,6 @@ fun AppVm.submitAuth() {
         AuthMode.SignUp -> signUp()
         AuthMode.Recover -> sendResetCode()
         AuthMode.RecoverCode -> applyResetCode()
+        AuthMode.Activation -> resendActivation()
     }
 }

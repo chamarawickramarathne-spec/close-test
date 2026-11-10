@@ -11,6 +11,11 @@ data class AuthRequest(
 )
 
 @JsonClass(generateAdapter = true)
+data class SendActivationRequest(
+    @Json(name = "email") val email: String
+)
+
+@JsonClass(generateAdapter = true)
 data class AuthResponse(
     @Json(name = "access_token") val accessToken: String? = null,
     @Json(name = "refresh_token") val refreshToken: String? = null,

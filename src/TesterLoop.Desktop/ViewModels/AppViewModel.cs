@@ -41,7 +41,7 @@ public sealed class AppViewModel : ObservableObject
     private void ShowSignIn() => Current = CreateLogin();
 
     private void ShowSignUp()
-        => Current = new SignUpViewModel(_service, SignedInAsync, ShowSignIn);
+        => Current = new SignUpViewModel(_service, ShowSignIn);
 
     private void ShowPasswordReset()
         => Current = new ResetPasswordViewModel(

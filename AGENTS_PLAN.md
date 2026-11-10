@@ -1706,3 +1706,50 @@ Pending:
   desktop release.
 - Still owed: migrations `032`-`034` (and earlier unapplied ones) plus the QA
   purge in `sql/maintenance/purge_test_accounts.sql`.
+## Account activation (2026-11-10)
+
+Completed:
+- New tester and developer accounts are created `inactive` and receive a 24-hour
+  single-use activation link by email; they cannot sign in until activated.
+- `profiles.status` plus the `account_activations` table; service-role RPCs
+  `create_activation_token`, `request_activation`, `activate_account` with a
+  60-second resend cooldown, single-use hashed tokens and `account.activated`
+  audit rows.
+- `whoami`, `ensure_account_role`, `claim_profile`, `is_admin`,
+  `current_developer_id` and `current_tester_id` now refuse or ignore inactive
+  profiles; `handle_new_user` creates profiles inactive and `bootstrap_admin`
+  creates the admin profile active.
+- Apps Script sender `google-apps-script/account-activation/` plus the
+  `send-activation` and `activate-account` Edge Functions. Activation only
+  happens on POST; GET renders a confirmation page so email scanners cannot
+  consume tokens. Anonymous resend always answers `{ok:true}` with a fixed
+  delay.
+- Desktop signup rebuilt around activation: check-your-email panel, resend
+  action, local session cleared after the email is sent; sign-in maps the
+  inactive error to a notice with a resend action. Android matches with
+  `AuthMode.Activation`.
+- Added `sql/migrations/037_account_activation.sql` and mirrored everything into
+  the greenfield schema, policies, functions and bootstrap.
+- Built, published and packaged `0.18.0` for both Windows apps and both
+  architectures; all four installers report product version `0.18.0` and every
+  manifest SHA-256 matches. Android rebuilt at `1.3.0` (`versionCode 10300`):
+  debug APK 18,863,915 bytes, release APK 13,043,524 bytes and release AAB
+  12,720,385 bytes, copied to `build/android`; lint 0 errors.
+- All four published executables start, stay responsive and were stopped after
+  the check.
+
+Pending:
+- Owner: run `sql/migrations/037_account_activation.sql` after `036` in the
+  Supabase SQL editor as `postgres`.
+- Owner: deploy the `account-activation` Apps Script web app with its
+  `SHARED_SECRET` and `ACTIVATION_LINK_BASE` properties, set the
+  `ACTIVATION_SCRIPT_URL` / `ACTIVATION_SCRIPT_SECRET` Edge secrets, and deploy
+  `send-activation` and `activate-account` with `--no-verify-jwt`.
+- Owner: keep Supabase `mailer_autoconfirm` on so signup returns a session.
+- Live verification of the activation email round-trip, the activation link,
+  the inactive sign-in refusal and the resend flow; no device or live account
+  was used this round.
+- Publish the desktop `desktop-v0.18.0` GitHub release with the four installers
+  and `desktop-version.json`.
+- Still owed: migrations `032`-`037` (whichever are unapplied) plus the QA purge
+  in `sql/maintenance/purge_test_accounts.sql`.

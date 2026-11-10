@@ -1597,7 +1597,7 @@ Date: 2026-11-02
 - Backfill uses the email local part with non-slug characters replaced by `-`
   and leading/trailing separators trimmed; an empty result becomes
   `group-<first 8 of id>`. A name that was already correct is unchanged.
-- If `016` has not run, the admin group list shows `â€”` for the name and the
+- If `016` has not run, the admin group list shows `—` for the name and the
   developer/tester JSON omits `group_name`; the client tolerates a missing name
   and refuses to open a group page rather than guessing.
 - Deployment order is now `008` -> `009` -> `010` -> `011` -> `012` -> `013` ->
@@ -4958,4 +4958,119 @@ Date: 2026-11-08
   desktop session was driven this round. The release URLs and manifest were
   verified directly. No secrets or endpoints were added; the updater reads a public
   GitHub release.
+
+### Modification 070
+
+Date: 2026-11-10
+
+#### Changes
+- Added email activation gating for new tester and developer accounts. A new
+  account is created `inactive`, receives a 24-hour single-use activation link by
+  email, and cannot sign in until it is activated.
+- Added `profiles.status` (`active` / `inactive`, default `inactive`, backfilled
+  `active`) and the `account_activations` table (`profile_id`, unique `token_hash`
+  64-hex, `expires_at` default 24 hours, `used_at`, `created_at`, `sent_at`).
+- Added service-role RPCs `create_activation_token(profile_id)`,
+  `request_activation(email)` and `activate_account(token)`: 60-second resend
+  cooldown, unused-token invalidation on a new request, token validation order
+  (format -> token row -> profile row -> already-active idempotency -> used ->
+  expired), audit row `account.activated`, and `notify pgrst` schema reload.
+- `whoami()`, `ensure_account_role()`, `claim_profile()`, `current_role_name()`,
+  `is_admin()`, `current_developer_id()` and `current_tester_id()` now refuse or
+  ignore inactive profiles, so an inactive account cannot reach any workspace.
+  `handle_new_user()` creates profiles `inactive`; `bootstrap_admin()` creates the
+  admin profile already `active`.
+- Added the Apps Script `google-apps-script/account-activation/` sender:
+  secret-checked `doPost`, HTML activation email from the support Gmail,
+  `ACTIVATION_LINK_BASE` property, optional `SENDER_NAME` / `TEST_EMAIL`.
+- Added two Edge Functions deployed with `--no-verify-jwt`:
+  - `send-activation`: authenticated signup path (validates the Bearer token,
+    ignores the body email, issues a token for the caller's inactive profile) and
+    an anonymous resend path (`{email}`, generic `{ok:true}` always, ~600 ms
+    delay); `503` missing config, `502` Apps Script failure, `429` throttled.
+  - `activate-account`: POST-only activation endpoint; `GET` renders a
+    confirmation page with an HTML form button so email scanners cannot consume
+    the token; escaped branded HTML, `Cache-Control: no-store`, CSP,
+    `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`.
+- Desktop signup was rebuilt around activation: `SignUpViewModel` shows a
+  check-your-email panel with `Resend activation email`; the account is created,
+  the activation email is sent with the short-lived session, the local session is
+  cleared, and no workspace opens. `LoginViewModel` maps the inactive-account
+  sign-in error to a notice with a resend action and clears the local session.
+  Sign-up entry now routes from the sign-in screen.
+- Android signup matches: `AuthMode.Activation` shows a check-your-email screen
+  with resend; inactive sign-in returns to Login with the activation notice and a
+  cleared session; the anonymous resend path is used for resends.
+- Version bumped to `0.18.0` desktop and `1.3.0` (`versionCode 10300`) Android.
+- Added `sql/migrations/037_account_activation.sql` and mirrored the status
+  column, activation table, RLS, RPCs, overrides and grants into the greenfield
+  schema, policies, functions and bootstrap SQL.
+
+#### Files / Components
+- `sql/migrations/037_account_activation.sql` (new)
+- `sql/schema/001_init.sql`, `sql/policies/002_rls.sql`,
+  `sql/functions/003_auth.sql`, `sql/seed/007_admin_bootstrap.sql`
+- `google-apps-script/account-activation/Code.gs`, `appsscript.json`, `README.md`
+  (new)
+- `supabase/functions/send-activation/index.ts`,
+  `supabase/functions/activate-account/index.ts` (new)
+- `src/TesterLoop.Shared/Core/Data/SignUpOutcome.cs` (new),
+  `SupabaseService.Activation.cs` (new), `SupabaseService.cs`
+- `src/TesterLoop.Desktop/ViewModels/SignUpViewModel.cs`, `LoginViewModel.cs`,
+  `AppViewModel.cs`
+- `src/TesterLoop.Desktop/Views/SignUpView.xaml`, `LoginView.xaml`
+- `mobile/app/src/main/kotlin/lk/closetester/helper/data/api/Models.kt`,
+  `SupabaseApi.kt`
+- `mobile/app/src/main/kotlin/lk/closetester/helper/ui/UiState.kt`,
+  `AppVm.Auth.kt`, `AppVm.Forms.kt`, `ui/auth/AuthScreen.kt`
+- `src/TesterLoop.Shared/Core/AppConfig.cs`,
+  `src/TesterLoop.Desktop/TesterLoop.Desktop.csproj`,
+  `src/TesterLoop.Admin/TesterLoop.Admin.csproj`,
+  `mobile/app/build.gradle.kts`
+- `installer/TesterLoop.iss`, `installer/TesterLoop.Admin.iss`
+- `AGENTS.md`, `AGENTS_PLAN.md`, `medial_support.txt`
+
+#### Important Notes
+- Supabase must keep `mailer_autoconfirm = true`. Signup must return a session so
+  the activation email can be requested immediately; if it does not, the client
+  shows "The account was created but TesterLoop needs Supabase email confirmation
+  switched off to send the activation email. Ask operations to check the
+  authentication settings."
+- Tokens are 64 lowercase hex characters, single-use, 24-hour expiry, stored as
+  SHA-256 hashes. `activate_account` is idempotent for an already-active profile
+  while the token is still valid; the response only exposes role and email.
+- `activate_account` writes its audit row explicitly with the activated profile as
+  actor; `write_audit()` cannot be used because it reads `auth.uid()`, which is
+  null under the service role.
+- The activation link is
+  `https://omlhddzyitzjbcgrxvbn.supabase.co/functions/v1/activate-account?token=<64hex>`.
+  Email scanners only hit `GET`, which renders the confirmation page and does
+  not consume the token; activation happens on `POST`.
+- `account_activations` has RLS enabled with no client policies, is revoked from
+  `public` / `anon` / `authenticated` and granted only to `service_role`. The
+  three activation RPCs are service-role-only; no client can mint or inspect a
+  token.
+- The anonymous resend always returns `{ok:true}` with a fixed delay, so it
+  cannot be used to enumerate which emails have accounts.
+- Deployment is owner-run: run `037` after `036` in the Supabase SQL editor as
+  `postgres`, deploy the Apps Script web app with its properties, set the
+  `ACTIVATION_SCRIPT_URL` and `ACTIVATION_SCRIPT_SECRET` Edge secrets, and deploy
+  both Edge Functions with `--no-verify-jwt`.
+- Apps Script Gmail quota is roughly 100 recipients/day; the 60-second cooldown
+  in `create_activation_token` limits abuse of the authenticated path.
+- Verification: `dotnet build TesterLoop.sln -c Release` 0 warnings / 0 errors.
+  Android `:app:assembleDebug`, `:app:assembleRelease`, `:app:bundleRelease` and
+  `:app:lintDebug` succeed. Published and packaged `0.18.0` for both apps and
+  both architectures; all four installers report product version `0.18.0`; all
+  four executables start, stay responsive and were stopped after the check.
+  `build/desktop-version.json` lists `0.18.0` and every SHA-256 matches the
+  compiled installer.
+- Not verified live: the activation email round-trip, the activation link, the
+  inactive sign-in refusal and the resend flow, because the Apps Script, Edge
+  Functions and migration `037` are owner-run and no live account was used this
+  round. SQL and TypeScript were reviewed statically only.
+- Security: no secrets ship in any client. The Apps Script secret and the Edge
+  secrets remain server-side; the timing-safe secret comparison and the generic
+  anonymous response prevent enumeration. Inactive accounts cannot reach any
+  dashboard RPC because every role helper now checks `status`.
 

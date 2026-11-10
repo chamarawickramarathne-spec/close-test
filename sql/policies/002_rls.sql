@@ -12,7 +12,8 @@ set search_path = public, pg_temp
 as $$
   select p.role::text
   from public.profiles p
-  where p.id = auth.uid();
+  where p.id = auth.uid()
+    and p.status = 'active';
 $$;
 
 create or replace function public.is_admin()
@@ -25,7 +26,9 @@ as $$
   select exists (
     select 1
     from public.admins a
+    join public.profiles p on p.id = a.auth_user_id
     where a.auth_user_id = auth.uid()
+      and p.status = 'active'
   );
 $$;
 
@@ -38,7 +41,9 @@ set search_path = public, pg_temp
 as $$
   select d.id
   from public.developers d
-  where d.auth_user_id = auth.uid();
+  join public.profiles p on p.id = d.auth_user_id
+  where d.auth_user_id = auth.uid()
+    and p.status = 'active';
 $$;
 
 create or replace function public.current_tester_id()
@@ -50,7 +55,9 @@ set search_path = public, pg_temp
 as $$
   select t.id
   from public.testers t
-  where t.auth_user_id = auth.uid();
+  join public.profiles p on p.id = t.auth_user_id
+  where t.auth_user_id = auth.uid()
+    and p.status = 'active';
 $$;
 
 alter table public.profiles       enable row level security;
@@ -62,6 +69,7 @@ alter table public.google_groups  enable row level security;
 alter table public.campaigns      enable row level security;
 alter table public.campaign_seats enable row level security;
 alter table public.payment_intents enable row level security;
+alter table public.account_activations enable row level security;
 alter table public.bug_reports    enable row level security;
 alter table public.tester_app_install_daily enable row level security;
 alter table public.audit_log      enable row level security;
@@ -135,6 +143,8 @@ revoke all on public.google_groups  from anon, authenticated;
 revoke all on public.campaigns      from anon, authenticated;
 revoke all on public.campaign_seats from anon, authenticated;
 revoke all on public.payment_intents from anon, authenticated;
+revoke all on public.account_activations from public, anon, authenticated;
+grant select, insert, update on public.account_activations to service_role;
 revoke all on public.bug_reports    from anon, authenticated;
 revoke all on public.tester_app_install_daily from anon, authenticated;
 revoke all on public.audit_log      from anon, authenticated;

@@ -35,8 +35,13 @@ begin
 
   if v_profile.id is null then
     v_name := split_part(v_email, '@', 1);
-    insert into public.profiles (id, role, display_name, email)
-    values (v_auth, 'admin', v_name, v_email);
+    insert into public.profiles (id, role, display_name, email, status)
+    values (v_auth, 'admin', v_name, v_email, 'active');
+  else
+    update public.profiles
+    set status = 'active'
+    where id = v_auth
+      and status <> 'active';
   end if;
 
   insert into public.admins (auth_user_id, note)
@@ -117,6 +122,21 @@ grant execute on function public.record_provider_refund(text, integer, jsonb)
 revoke execute on function public.expire_stale_payment_intents()
   from public, anon, authenticated;
 grant execute on function public.expire_stale_payment_intents()
+  to service_role;
+
+revoke execute on function public.create_activation_token(uuid)
+  from public, anon, authenticated;
+grant execute on function public.create_activation_token(uuid)
+  to service_role;
+
+revoke execute on function public.request_activation(text)
+  from public, anon, authenticated;
+grant execute on function public.request_activation(text)
+  to service_role;
+
+revoke execute on function public.activate_account(text)
+  from public, anon, authenticated;
+grant execute on function public.activate_account(text)
   to service_role;
 
 revoke execute on function public.bootstrap_admin(text) from public, anon, authenticated;

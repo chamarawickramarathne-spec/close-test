@@ -59,6 +59,13 @@ interface SupabaseApi {
         @Body req: SetOptInRequest
     ): Response<Unit>
 
+    @POST("/functions/v1/send-activation")
+    suspend fun sendActivation(
+        @Header("apikey") apiKey: String,
+        @Header("Authorization") auth: String? = null,
+        @Body req: SendActivationRequest
+    ): Response<Unit>
+
     @POST("/functions/v1/verify-opt-in")
     suspend fun verifyOptIn(
         @Header("apikey") apiKey: String,

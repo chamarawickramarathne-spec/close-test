@@ -15,6 +15,8 @@ create table public.profiles (
   role         public.app_role not null,
   display_name text not null,
   email        text not null,
+  status       text not null default 'inactive'
+    check (status in ('active', 'inactive')),
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
@@ -23,6 +25,16 @@ create table public.admins (
   auth_user_id uuid primary key references auth.users (id) on delete cascade,
   note         text,
   created_at   timestamptz not null default now()
+);
+
+create table public.account_activations (
+  id          uuid primary key default gen_random_uuid(),
+  profile_id  uuid not null references public.profiles (id) on delete cascade,
+  token_hash  text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),
+  expires_at  timestamptz not null default (now() + interval '24 hours'),
+  used_at     timestamptz,
+  created_at  timestamptz not null default now(),
+  sent_at     timestamptz
 );
 
 create table public.developers (
@@ -299,6 +311,10 @@ create table public.audit_log (
   created_at  timestamptz not null default now()
 );
 
+create index account_activations_profile_idx
+  on public.account_activations (profile_id, created_at desc);
+create index account_activations_expiry_idx
+  on public.account_activations (expires_at);
 create index campaigns_state_idx on public.campaigns (state);
 create index campaigns_developer_idx on public.campaigns (developer_id);
 create unique index campaigns_developer_package_ci

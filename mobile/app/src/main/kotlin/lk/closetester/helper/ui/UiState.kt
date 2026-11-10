@@ -7,7 +7,7 @@ import lk.closetester.helper.data.api.Tester
 
 enum class Phase { Splash, Auth, Ready }
 
-enum class AuthMode { Login, SignUp, Recover, RecoverCode }
+enum class AuthMode { Login, SignUp, Recover, RecoverCode, Activation }
 
 data class UiState(
     val phase: Phase = Phase.Splash,

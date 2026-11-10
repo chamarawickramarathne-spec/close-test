@@ -32,7 +32,7 @@ public sealed partial class SupabaseService
 
     public async Task InitializeAsync() => await _client.InitializeAsync();
 
-    public Task<Account> SignUpDeveloperAsync(
+    public Task<SignUpOutcome> SignUpDeveloperAsync(
         string email, string password, string displayName, string companyName)
     {
         var data = new Dictionary<string, object>
@@ -45,7 +45,7 @@ public sealed partial class SupabaseService
         return SignUpAsync(email, password, data);
     }
 
-    public Task<Account> SignUpTesterAsync(
+    public Task<SignUpOutcome> SignUpTesterAsync(
         string email, string password, string displayName, string region, string devices)
     {
         var deviceList = devices
@@ -256,7 +256,7 @@ public sealed partial class SupabaseService
             ("p_device", NullIfEmpty(device)),
             ("p_evidence_url", NullIfEmpty(evidenceUrl))));
 
-    private async Task<Account> SignUpAsync(
+    private async Task<SignUpOutcome> SignUpAsync(
         string email, string password, Dictionary<string, object> data)
     {
         await EnsureSchemaAsync();
@@ -276,7 +276,8 @@ public sealed partial class SupabaseService
         if (session is null || string.IsNullOrWhiteSpace(session.AccessToken))
         {
             throw new InvalidOperationException(
-                "The account was created but email confirmation is still switched on. Confirm the email, then sign in.");
+                "The account was created but TesterLoop needs Supabase email confirmation switched off "
+                + "to send the activation email. Ask operations to check the authentication settings.");
         }
 
         if (_client.Auth.CurrentSession is null)
@@ -294,7 +295,16 @@ public sealed partial class SupabaseService
             });
         }
 
-        return await WhoAmIAsync();
+        try
+        {
+            await SendActivationAsync();
+        }
+        finally
+        {
+            await ClearLocalSessionAsync();
+        }
+
+        return new SignUpOutcome(email.Trim());
     }
 
 }

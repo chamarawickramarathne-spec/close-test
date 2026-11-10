@@ -54,75 +54,128 @@
                         Command="{Binding BackCommand}"
                         HorizontalAlignment="Left" />
 
-                <TextBlock Text="CREATE ACCOUNT" Style="{StaticResource Eyebrow}" Margin="0,18,0,0" />
-                <TextBlock Text="Join TesterLoop" Style="{StaticResource H1}" Margin="0,8,0,0" />
-                <TextBlock Text="{Binding RoleHint}"
-                           Style="{StaticResource Caption}"
-                           FontSize="12"
-                           Margin="0,7,0,0"
-                           TextWrapping="Wrap" />
+                <StackPanel Visibility="{Binding IsFormVisible, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="CREATE ACCOUNT" Style="{StaticResource Eyebrow}" Margin="0,18,0,0" />
+                    <TextBlock Text="Join TesterLoop" Style="{StaticResource H1}" Margin="0,8,0,0" />
+                    <TextBlock Text="{Binding RoleHint}"
+                               Style="{StaticResource Caption}"
+                               FontSize="12"
+                               Margin="0,7,0,0"
+                               TextWrapping="Wrap" />
 
-                <TextBlock Text="ACCOUNT TYPE" Style="{StaticResource Eyebrow}" Margin="0,22,0,7" />
-                <ComboBox ItemsSource="{Binding Roles}"
-                          SelectedItem="{Binding SelectedRole}"
-                          Padding="8,6"
-                          FontSize="13" />
+                    <TextBlock Text="ACCOUNT TYPE" Style="{StaticResource Eyebrow}" Margin="0,22,0,7" />
+                    <ComboBox ItemsSource="{Binding Roles}"
+                              SelectedItem="{Binding SelectedRole}"
+                              Padding="8,6"
+                              FontSize="13" />
 
-                <TextBlock Text="YOUR NAME" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
-                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="YOUR NAME" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                    <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" />
 
-                <StackPanel Visibility="{Binding IsDeveloper, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="COMPANY / STUDIO" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
-                    <TextBox Text="{Binding CompanyName, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
+                    <StackPanel Visibility="{Binding IsDeveloper, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="COMPANY / STUDIO" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                        <TextBox Text="{Binding CompanyName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
 
-                <StackPanel Visibility="{Binding IsTester, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="REGION" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
-                    <TextBox Text="{Binding Region, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Text="DEVICES" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
-                    <TextBox Text="{Binding Devices, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Text="Separate devices with commas."
+                    <StackPanel Visibility="{Binding IsTester, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="REGION" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                        <TextBox Text="{Binding Region, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="DEVICES" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                        <TextBox Text="{Binding Devices, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="Separate devices with commas."
+                                   Style="{StaticResource Caption}"
+                                   FontSize="10.5"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <TextBlock Text="SIGN-IN EMAIL" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="This is also the Google address used for Play testing."
                                Style="{StaticResource Caption}"
                                FontSize="10.5"
                                Margin="0,4,0,0" />
+
+                    <TextBlock Text="PASSWORD" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
+                    <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged" />
+                    <TextBlock Text="At least 8 characters."
+                               Style="{StaticResource Caption}"
+                               FontSize="10.5"
+                               Margin="0,4,0,0" />
+
+                    <Border Background="{StaticResource BadSoftBrush}"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,14,0,0"
+                            Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding Error}"
+                                   FontSize="11.5"
+                                   Foreground="{StaticResource BadBrush}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+
+                    <Button Content="Create account"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding CreateCommand}"
+                            Padding="14,11"
+                            Margin="0,20,0,0" />
+
+                    <TextBlock Text="We email a 24-hour activation link before the account can be used."
+                               Style="{StaticResource Caption}"
+                               FontSize="10.5"
+                               Margin="0,14,0,0"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Text="Operations accounts are created by the TesterLoop team. Email admin@testerloop.dev if you need staff access."
+                               Style="{StaticResource Caption}"
+                               FontSize="10.5"
+                               Margin="0,8,0,0"
+                               TextWrapping="Wrap" />
                 </StackPanel>
 
-                <TextBlock Text="SIGN-IN EMAIL" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
-                <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Text="This is also the Google address used for Play testing."
-                           Style="{StaticResource Caption}"
-                           FontSize="10.5"
-                           Margin="0,4,0,0" />
+                <StackPanel Visibility="{Binding IsCreated, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="CHECK YOUR EMAIL" Style="{StaticResource Eyebrow}" Margin="0,18,0,0" />
+                    <TextBlock Text="Activate your account" Style="{StaticResource H1}" Margin="0,8,0,0" />
+                    <TextBlock Style="{StaticResource Caption}"
+                               FontSize="12"
+                               Margin="0,7,0,0"
+                               TextWrapping="Wrap">
+                        <Run Text="We sent an activation link to " /><Run Text="{Binding CreatedEmail, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=". Open it within 24 hours to switch the account on, then sign in." />
+                    </TextBlock>
 
-                <TextBlock Text="PASSWORD" Style="{StaticResource Eyebrow}" Margin="0,16,0,7" />
-                <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged" />
-                <TextBlock Text="At least 8 characters."
-                           Style="{StaticResource Caption}"
-                           FontSize="10.5"
-                           Margin="0,4,0,0" />
+                    <Border Background="{StaticResource GoodSoftBrush}"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,16,0,0"
+                            Visibility="{Binding HasResendStatus, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding ResendStatus}"
+                                   FontSize="11.5"
+                                   Foreground="{StaticResource GoodBrush}"
+                                   TextWrapping="Wrap" />
+                    </Border>
 
-                <Border Background="{StaticResource BadSoftBrush}"
-                        CornerRadius="8"
-                        Padding="10,8"
-                        Margin="0,14,0,0"
-                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="{Binding Error}"
-                               FontSize="11.5"
-                               Foreground="{StaticResource BadBrush}"
-                               TextWrapping="Wrap" />
-                </Border>
+                    <Border Background="{StaticResource BadSoftBrush}"
+                            CornerRadius="8"
+                            Padding="10,8"
+                            Margin="0,14,0,0"
+                            Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding Error}"
+                                   FontSize="11.5"
+                                   Foreground="{StaticResource BadBrush}"
+                                   TextWrapping="Wrap" />
+                    </Border>
 
-                <Button Content="Create account"
-                        Style="{StaticResource PrimaryButton}"
-                        Command="{Binding CreateCommand}"
-                        Padding="14,11"
-                        Margin="0,20,0,0" />
+                    <Button Content="Go to sign in"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding BackCommand}"
+                            Padding="14,11"
+                            Margin="0,20,0,0" />
 
-                <TextBlock Text="Operations accounts are created by the TesterLoop team. Email admin@testerloop.dev if you need staff access."
-                           Style="{StaticResource Caption}"
-                           FontSize="10.5"
-                           Margin="0,14,0,0"
-                           TextWrapping="Wrap" />
+                    <Button Content="Resend activation email"
+                            Style="{StaticResource GhostButton}"
+                            Command="{Binding ResendCommand}"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

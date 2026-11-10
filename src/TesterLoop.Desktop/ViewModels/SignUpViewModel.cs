@@ -2,14 +2,12 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using TesterLoop.Desktop.Core;
 using TesterLoop.Desktop.Core.Data;
-using TesterLoop.Desktop.Core.Models;
 
 namespace TesterLoop.Desktop.ViewModels;
 
 public sealed partial class SignUpViewModel : ObservableObject
 {
     private readonly SupabaseService _service;
-    private readonly Func<Account, Task> _onSignedIn;
 
     private string _selectedRole = "Developer";
     private string _displayName = string.Empty;
@@ -19,19 +17,22 @@ public sealed partial class SignUpViewModel : ObservableObject
     private string _email = string.Empty;
     private string _password = string.Empty;
     private string _error = string.Empty;
+    private string _createdEmail = string.Empty;
+    private string _resendStatus = string.Empty;
 
-    public SignUpViewModel(
-        SupabaseService service, Func<Account, Task> onSignedIn, Action onBack)
+    public SignUpViewModel(SupabaseService service, Action onBack)
     {
         _service = service;
-        _onSignedIn = onSignedIn;
         CreateCommand = new AsyncRelayCommand(CreateAsync);
+        ResendCommand = new AsyncRelayCommand(ResendAsync);
         BackCommand = new RelayCommand(onBack);
     }
 
     public IReadOnlyList<string> Roles { get; } = ["Developer", "Tester"];
 
     public AsyncRelayCommand CreateCommand { get; }
+
+    public AsyncRelayCommand ResendCommand { get; }
 
     public RelayCommand BackCommand { get; }
 
@@ -52,6 +53,12 @@ public sealed partial class SignUpViewModel : ObservableObject
     public bool IsDeveloper => SelectedRole != "Tester";
 
     public bool IsTester => !IsDeveloper;
+
+    public bool IsCreated => _createdEmail.Length > 0;
+
+    public bool IsFormVisible => !IsCreated;
+
+    public string CreatedEmail => _createdEmail;
 
     public string DisplayName
     {
@@ -103,6 +110,20 @@ public sealed partial class SignUpViewModel : ObservableObject
 
     public bool HasError => Error.Length > 0;
 
+    public string ResendStatus
+    {
+        get => _resendStatus;
+        set
+        {
+            if (Set(ref _resendStatus, value))
+            {
+                Raise(nameof(HasResendStatus));
+            }
+        }
+    }
+
+    public bool HasResendStatus => ResendStatus.Length > 0;
+
     public string RoleHint => IsDeveloper
         ? "Create a company workspace for your apps."
         : "Join campaigns and file reports as a freelance tester.";
@@ -118,7 +139,7 @@ public sealed partial class SignUpViewModel : ObservableObject
 
         try
         {
-            var account = IsDeveloper
+            var outcome = IsDeveloper
                 ? await _service.SignUpDeveloperAsync(
                     Email, Password, DisplayName, CompanyName)
                 : await _service.SignUpTesterAsync(
@@ -126,10 +147,41 @@ public sealed partial class SignUpViewModel : ObservableObject
 
             _password = string.Empty;
             Raise(nameof(Password));
-            await _onSignedIn(account);
+            _createdEmail = outcome.Email;
+            Error = string.Empty;
+            Raise(nameof(IsCreated));
+            Raise(nameof(IsFormVisible));
+            Raise(nameof(CreatedEmail));
         }
         catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
         {
+            Error = ex.Message;
+        }
+    }
+
+    private async Task ResendAsync()
+    {
+        if (IsCreated)
+        {
+            Email = _createdEmail;
+        }
+
+        if (!LooksLikeEmail(Email))
+        {
+            Error = "Enter the email address you signed up with.";
+            return;
+        }
+
+        try
+        {
+            await _service.RequestActivationAsync(Email.Trim());
+            Error = string.Empty;
+            ResendStatus =
+                "If that address has an unactivated account, we sent a new activation email.";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
+        {
+            ResendStatus = string.Empty;
             Error = ex.Message;
         }
     }

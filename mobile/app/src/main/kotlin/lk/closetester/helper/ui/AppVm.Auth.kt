@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import lk.closetester.helper.core.AppConfig
 import lk.closetester.helper.data.api.AuthRequest
 import lk.closetester.helper.data.api.AuthResponse
+import lk.closetester.helper.data.api.SendActivationRequest
 import lk.closetester.helper.data.api.apiMessage
 import lk.closetester.helper.data.api.orThrow
 import kotlinx.coroutines.launch
@@ -24,7 +25,22 @@ internal fun AppVm.login() {
             )
             handleAuth(resp, email)
         } catch (e: Exception) {
-            failAuth(e)
+            val message = apiMessage(e)
+            if (message.contains("not activated", ignoreCase = true)) {
+                store.clearSession()
+                updateState {
+                    it.copy(
+                        authBusy = false,
+                        authMode = AuthMode.Login,
+                        authError = null,
+                        authNotice = "Your account is not activated yet. Open the activation email, then sign in again.",
+                        email = email,
+                        lastEmail = email
+                    )
+                }
+            } else {
+                failAuth(e)
+            }
         }
     }
 }
@@ -51,7 +67,74 @@ internal fun AppVm.signUp() {
                     )
                 )
             )
-            handleAuth(resp, email)
+            val access = resp.accessToken?.takeIf { it.isNotBlank() }
+            val refresh = resp.refreshToken?.takeIf { it.isNotBlank() }
+            if (access == null || refresh == null) {
+                updateState {
+                    it.copy(
+                        authBusy = false,
+                        authMode = AuthMode.Login,
+                        password = "",
+                        authError = "The account was created but TesterLoop needs Supabase email confirmation switched off to send the activation email. Ask operations to check the authentication settings."
+                    )
+                }
+                return@launch
+            }
+            store.replaceSession(access, refresh)
+            try {
+                api.sendActivation(
+                    AppConfig.SUPABASE_ANON_KEY,
+                    "Bearer $access",
+                    SendActivationRequest(email)
+                ).orThrow()
+            } finally {
+                store.clearSession()
+            }
+            updateState {
+                it.copy(
+                    authBusy = false,
+                    authMode = AuthMode.Activation,
+                    password = "",
+                    authError = null,
+                    authNotice = "We sent a 24-hour activation link to $email. Open it, then sign in.",
+                    email = email,
+                    lastEmail = email,
+                    fullName = ""
+                )
+            }
+        } catch (e: Exception) {
+            store.clearSession()
+            updateState {
+                it.copy(
+                    authBusy = false,
+                    authMode = AuthMode.Login,
+                    authError = apiMessage(e),
+                    authNotice = "Your account was created. Request a new activation email, then sign in."
+                )
+            }
+        }
+    }
+}
+
+internal fun AppVm.resendActivation() {
+    val email = ui.value.email.trim()
+    if (!isEmail(email)) return updateState { it.copy(authError = "Enter a valid email address.") }
+    updateState { it.copy(authBusy = true, authError = null, authNotice = null) }
+    viewModelScope.launch {
+        try {
+            api.sendActivation(
+                AppConfig.SUPABASE_ANON_KEY,
+                null,
+                SendActivationRequest(email)
+            ).orThrow()
+            updateState {
+                it.copy(
+                    authBusy = false,
+                    authMode = AuthMode.Activation,
+                    authNotice = "If that account is waiting for activation, a new link is on its way. Check your email.",
+                    lastEmail = email
+                )
+            }
         } catch (e: Exception) {
             failAuth(e)
         }

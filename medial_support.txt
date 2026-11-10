@@ -1,7 +1,7 @@
 TESTERLOOP - MEDIA & MARKETING SUPPORT
-Last updated: 2026-11-08
-Application version: 0.17.1 desktop (Windows x86 / x64, main app + admin app)
-                   1.2.6 Android tester app (signed APK + AAB)
+Last updated: 2026-11-10
+Application version: 0.18.0 desktop (Windows x86 / x64, main app + admin app)
+                   1.3.0 Android tester app (signed APK + AAB)
 
 ==========================================================
 1. APPLICATION TITLE
@@ -20,16 +20,16 @@ Download page: https://github.com/chamarawickramarathne-spec/close-test/releases
 ==========================================================
 
 TesterLoop runs a Google Play closed test from two focused Windows apps with real
-accounts: choose Developer or Tester when you sign in. Developers pick an
-operations-defined package when creating a project, then activate the project
-with one Free Access action; the normal fee is waived for now, and operations can
-still record a manual payment. Operations reserve
-the exact Google Group identity, open Google's group creation page,
-create the group by hand and attach it in TesterLoop Admin. TesterLoop Mobile
-verifies each tester's opt-in against that group, while the main app tracks the
-12-tester / 14-day clock and shows the day the app is actually eligible for
-production. Testers can also use the Android app to join projects, confirm opt-in,
-report issues and record install and daily usage evidence.
+accounts: sign up, confirm the emailed activation link, then choose Developer or
+Tester when you sign in. Developers pick an operations-defined package when
+creating a project, then activate the project with one Free Access action; the
+normal fee is waived for now, and operations can still record a manual payment.
+Operations reserve the exact Google Group identity, open Google's group creation
+page, create the group by hand and attach it in TesterLoop Admin. TesterLoop
+Mobile verifies each tester's opt-in against that group, while the main app
+tracks the 12-tester / 14-day clock and shows the day the app is actually
+eligible for production. Testers can also use the Android app to join projects,
+confirm opt-in, report issues and record install and daily usage evidence.
 
 ==========================================================
 3. LONG DESCRIPTION
@@ -45,11 +45,12 @@ TesterLoop is a Windows desktop suite that runs the whole programme. Developers 
 testers use TesterLoop; the operations team uses TesterLoop Admin. Each audience
 gets its own workspace and never sees another side of the business. One account can
 sign in as either Developer or Tester, and the missing profile is created on first
-use without a second registration. Accounts can be created in the main app, signed
-in from any Windows machine, and recovered by email. The Android tester app is the
-tester workspace only: a developer account can also use it to test, while
-operations accounts are refused. Operations accounts are provisioned separately and
-the admin app has no public signup.
+use without a second registration. New accounts confirm their email through a
+24-hour single-use activation link before they can sign in, and forgotten
+passwords are recovered by email code. Accounts work from any Windows machine. The
+Android tester app is the tester workspace only: a developer account can also use
+it to test, while operations accounts are refused. Operations accounts are
+provisioned separately and the admin app has no public signup.
 
 How a run works
 - The developer creates a project in the app and chooses one active payment
@@ -92,7 +93,11 @@ Who it is for
 Main features
 - Real accounts in two apps. TesterLoop lets one account choose Developer or
   Tester at sign-in, adds the missing profile automatically, and offers open
-  signup plus email-code password recovery; TesterLoop Admin handles operations
+  signup plus email-code password recovery. A new account arrives inactive and
+  receives a 24-hour single-use activation link by email; the link activates the
+  account in one click and the account stays locked until then. A resend action
+  on both the sign-up and sign-in screens requests a fresh link, and activation
+  works the same way on Windows and Android. TesterLoop Admin handles operations
   sign-in with no public signup.
 - Operations-defined payment packages. Each package carries a name, a project fee
   and a tester payout. Operations create, edit, activate, retire or delete unused
@@ -176,12 +181,13 @@ Main features
   get a one-click Play testing link, and file reports with device and build
   attached. Each project keeps its own 15-seat cap; there is no personal project
   limit.
-- A redesigned Android tester app. TesterLoop Mobile 1.2.6 is the tester workspace
+- A redesigned Android tester app. TesterLoop Mobile 1.3.0 is the tester workspace
   with a warm, calm interface and one clear place for everything: a home screen that
   leads with the project clock, the projects that need attention and recent
   reports; a Joined/Open project list; campaign pages for the Play link, usage
   evidence and reports; a report sheet with severity, title, build and the phone
-  model captured by the mobile app; and an editable profile. A bottom bar moves
+  model captured by the mobile app; an editable profile; and a check-your-email
+  activation step after sign-up. A bottom bar moves
   between Home, Projects and Profile.
 - Mobile sessions that stay signed in. The app refreshes an expiring session before
   using it, retries once if the server rejects a token, and only then asks the
@@ -345,7 +351,8 @@ tester quietly leaving on day 11 sends you back to zero.
 
 TesterLoop takes that entire job off your hands.
 
-- Create your developer account in the Windows app, then create the project and
+- Create your developer account in the Windows app and confirm the activation
+  link we email you, then create the project and
   choose a package. The default Standard package is normally $15 with a $0.50
   tester payout, and operations can define other packages for different project
   tiers. Payment is currently waived, so the project starts with Free Access.
@@ -363,7 +370,8 @@ TesterLoop takes that entire job off your hands.
 - A project may use at most 15 testers in total, because every tester is paid. A
   failed Google Group check releases the unconfirmed seat so the tester can fix
   membership and rejoin.
-- Testers create their own account, join from their bench, and the app opens the
+- Testers create their own account, confirm the emailed activation link, join from
+  their bench, and the app opens the
   project's Google Group page for them so they can request access. They then open
   the Play testing page in one click. After allowing Usage Access, they press
   Confirm opt-in in TesterLoop Mobile, which checks that their Google address is
@@ -443,6 +451,8 @@ Download TesterLoop and start your next closed test today.
 #TesterApp
 #DesktopUpdates
 #SoftwareUpdates
+#AccountActivation
+#EmailVerification
 
 ==========================================================
 6. AI IMAGE PROMPTS
@@ -479,7 +489,8 @@ Download TesterLoop and start your next closed test today.
    "Project fee" and "Tester payout" as two paired values. Deep indigo gradient
    background, minimal 3D render, soft glow, plenty of negative space.
 
-5. A tester holding a phone with a Play testing page open, beside a floating
+5. A tester holding a phone showing a calm "Activate your tester account" email
+   with a single confirm button, beside a floating
    translucent panel that shows a group membership check turning green
    ("verified member", "opt-in confirmed") plus a project card with a tester payout
    line. A small toast reads "Google Group membership confirmed." Warm modern colour
@@ -495,9 +506,11 @@ NOTES FOR THE DESIGNER
   warning #B45309, danger #DC2626.
 - Typography: Segoe UI Variable for interface, Cascadia Mono for addresses.
 - Accounts and data: Supabase-backed email/password sign-in; no Google or social
-  sign-in is offered in 0.17.1 desktop or 1.2.6 Android. One account can choose
+  sign-in is offered in 0.18.0 desktop or 1.3.0 Android. One account can choose
   Developer or Tester at sign-in, and the missing profile is created server-side on
-  first use. TesterLoop Admin is a separate install with its own stable x86/x64
+  first use. New accounts receive a 24-hour single-use email activation link and
+  cannot sign in until the account is activated. TesterLoop Admin is a separate
+  install with its own stable x86/x64
   installers, a left-hand menu, per-tester, per-developer and per-project detail
   pages, a Payment Packages page and an editable admin profile.
 - Notifications: show success and error messages as compact top-right toasts. Show

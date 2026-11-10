@@ -1,5 +1,5 @@
 #define AppName "TesterLoop Admin"
-#define AppVersion "0.17.1"
+#define AppVersion "0.18.0"
 #define AppPublisher "TesterLoop"
 #define AppExe "TesterLoopAdmin.exe"
 

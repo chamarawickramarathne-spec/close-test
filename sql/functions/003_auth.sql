@@ -47,8 +47,8 @@ begin
     raise exception 'That Google account is already linked to another tester.';
   end if;
 
-  insert into public.profiles (id, role, display_name, email)
-  values (new.id, v_role::public.app_role, v_display, v_email);
+  insert into public.profiles (id, role, display_name, email, status)
+  values (new.id, v_role::public.app_role, v_display, v_email, 'inactive');
 
   if v_role = 'developer' then
     if length(v_company) < 2 then
@@ -152,6 +152,10 @@ begin
     raise exception 'This sign-in has no TesterLoop profile. Ask operations for help.';
   end if;
 
+  if v_profile.status <> 'active' then
+    raise exception 'Your TesterLoop account is not activated yet. Open the activation email we sent, then sign in again.';
+  end if;
+
   select * into v_developer from public.developers where auth_user_id = auth.uid();
   select * into v_tester from public.testers where auth_user_id = auth.uid();
 
@@ -203,6 +207,10 @@ begin
   select * into v_profile from public.profiles where id = v_uid;
   if not found then
     raise exception 'This sign-in has no TesterLoop profile. Ask operations for help.';
+  end if;
+
+  if v_profile.status <> 'active' then
+    raise exception 'Your TesterLoop account is not activated yet. Open the activation email we sent, then sign in again.';
   end if;
 
   if v_profile.role = 'admin' then
@@ -366,8 +374,8 @@ begin
     raise exception 'That Google account is already linked to another tester.';
   end if;
 
-  insert into public.profiles (id, role, display_name, email)
-  values (v_uid, v_role::public.app_role, v_display, v_email);
+  insert into public.profiles (id, role, display_name, email, status)
+  values (v_uid, v_role::public.app_role, v_display, v_email, 'inactive');
 
   if v_role = 'developer' then
     if length(v_company) < 2 then

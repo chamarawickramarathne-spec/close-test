@@ -40,6 +40,7 @@ import lk.closetester.helper.ui.onFullName
 import lk.closetester.helper.ui.onNewPassword
 import lk.closetester.helper.ui.onPassword
 import lk.closetester.helper.ui.onResetCode
+import lk.closetester.helper.ui.resendActivation
 import lk.closetester.helper.ui.submitAuth
 import lk.closetester.helper.ui.switchAuth
 import lk.closetester.helper.ui.UiState
@@ -59,7 +60,7 @@ fun AuthScreen(ui: UiState, vm: AppVm) {
     var passwordVisible by remember { mutableStateOf(false) }
     val busy = ui.authBusy
     val parentMode = when (ui.authMode) {
-        AuthMode.SignUp, AuthMode.Recover -> AuthMode.Login
+        AuthMode.SignUp, AuthMode.Recover, AuthMode.Activation -> AuthMode.Login
         AuthMode.RecoverCode -> AuthMode.Recover
         AuthMode.Login -> null
     }
@@ -72,12 +73,14 @@ fun AuthScreen(ui: UiState, vm: AppVm) {
         AuthMode.SignUp -> "NEW TESTER"
         AuthMode.Recover -> "RESET PASSWORD"
         AuthMode.RecoverCode -> "CHECK YOUR EMAIL"
+        AuthMode.Activation -> "CHECK YOUR EMAIL"
     }
     val headline = when (ui.authMode) {
         AuthMode.Login -> "Sign in to your tester bench."
         AuthMode.SignUp -> "Join projects. File reports. Get paid."
         AuthMode.Recover -> "We'll email you a reset code."
         AuthMode.RecoverCode -> "Choose a new password."
+        AuthMode.Activation -> "Activate your tester account."
     }
 
     Column(
@@ -97,10 +100,12 @@ fun AuthScreen(ui: UiState, vm: AppVm) {
         Text(headline, style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(8.dp))
         Text(
-            if (ui.authMode == AuthMode.SignUp) {
-                "The email you sign up with is also the Google address you add to the Play test."
-            } else {
-                "Closed testing for Android apps, without the spreadsheet."
+            when (ui.authMode) {
+                AuthMode.SignUp ->
+                    "The email you sign up with is also the Google address you add to the Play test."
+                AuthMode.Activation ->
+                    "We email a 24-hour activation link before the account can be used. Ask for a new link if yours expired."
+                else -> "Closed testing for Android apps, without the spreadsheet."
             },
             style = MaterialTheme.typography.bodyMedium,
             color = Muted
@@ -150,7 +155,7 @@ fun AuthScreen(ui: UiState, vm: AppVm) {
             Spacer(Modifier.height(14.dp))
         }
 
-        if (ui.authMode != AuthMode.Recover) {
+        if (ui.authMode != AuthMode.Recover && ui.authMode != AuthMode.Activation) {
             val value = if (ui.authMode == AuthMode.RecoverCode) ui.newPassword else ui.password
             val onChange: (String) -> Unit =
                 if (ui.authMode == AuthMode.RecoverCode) vm::onNewPassword else vm::onPassword
@@ -184,6 +189,7 @@ fun AuthScreen(ui: UiState, vm: AppVm) {
                 AuthMode.SignUp -> "Create account"
                 AuthMode.Recover -> "Send reset code"
                 AuthMode.RecoverCode -> "Update password"
+                AuthMode.Activation -> "Resend activation email"
             },
             onClick = vm::submitAuth,
             loading = busy
@@ -202,6 +208,20 @@ fun AuthScreen(ui: UiState, vm: AppVm) {
                 AuthMode.SignUp -> TlTextAction("I already have an account", { vm.switchAuth(AuthMode.Login) }, enabled = !busy)
                 AuthMode.Recover -> TlTextAction("Back to sign in", { vm.switchAuth(AuthMode.Login) }, enabled = !busy)
                 AuthMode.RecoverCode -> TlTextAction("Use a different email", { vm.switchAuth(AuthMode.Recover) }, enabled = !busy)
+                AuthMode.Activation -> TlTextAction("Back to sign in", { vm.switchAuth(AuthMode.Login) }, enabled = !busy)
+            }
+        }
+        if (ui.authMode == AuthMode.Login) {
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                TlTextAction(
+                    "Resend activation email",
+                    { vm.resendActivation() },
+                    enabled = !busy
+                )
             }
         }
         Spacer(Modifier.height(24.dp))

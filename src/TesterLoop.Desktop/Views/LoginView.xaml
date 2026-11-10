@@ -135,6 +135,13 @@
                                TextWrapping="Wrap" />
                 </Border>
 
+                <Button Content="Resend activation email"
+                        Style="{StaticResource QuietButton}"
+                        Command="{Binding ResendActivationCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="0,6,0,0"
+                        Visibility="{Binding ShowResend, Converter={StaticResource BoolToVisibility}}" />
+
                 <Button Content="Sign in"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding SignInCommand}"

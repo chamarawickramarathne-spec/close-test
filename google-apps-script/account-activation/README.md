@@ -10,10 +10,10 @@ Supabase Edge Function.
 2. Replace `Code.gs` with the file in this folder and `appsscript.json` with the
    manifest here.
 3. Open **Project Settings > Script Properties** and add:
-   - `SHARED_SECRET` - a long random value, also used as lqllodzijzpqgebv
+   - `SHARED_SECRET` - a long random value, also used as
      `ACTIVATION_SCRIPT_SECRET` in Supabase.
    - `ACTIVATION_LINK_BASE` -
-     `https://omlhddzyitzjbcgrxvbn.supabase.co/functions/v1/activate-account`.
+     `https://chamarawickramarathne-spec.github.io/close-test/activate.html`.
    - `SENDER_NAME` - optional sender name, for example `TesterLoop`.
 4. Deploy as **Web app**, execute as **Me**, access **Anyone**.
 5. Authorise the **send email as you** permission when Google asks. The code
@@ -30,6 +30,11 @@ Supabase Edge Function.
   accepted.
 - The message includes a 24-hour, single-use activation link built from
   `ACTIVATION_LINK_BASE` plus `?token=<64 hex>`.
+- `ACTIVATION_LINK_BASE` must point at `docs/activate.html` on the GitHub
+  Pages website, not at the Edge Function. Supabase rewrites the HTML of GET
+  responses from its functions to `text/plain`, so a page served by
+  `activate-account` would render as raw text in the browser. The Pages page
+  reads the token and posts the activation to the function.
 - The function never logs the token and never returns it.
 - `doGet` returns a health response only.
 - `testSend` uses the `TEST_EMAIL` script property and a fake token. It is a
@@ -44,4 +49,6 @@ Supabase Edge Function.
 - Do not put the shared secret in a desktop or mobile client.
 - Do not remove the `https://` check on `ACTIVATION_LINK_BASE`.
 - The activation page only activates after the user presses the button, so an
-  email scanner that opens the link cannot consume it.
+  email scanner that opens the link cannot consume it. Email links open the
+  GitHub Pages page; the `activate-account` GET simply redirects there too, so
+  links from older emails keep working after the change.

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action https://omlhddzyitzjbcgrxvbn.supabase.co; base-uri 'none'">
+<title>Activate your account - TesterLoop</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px; background:#f7f4ed; color:#12211e;
+    font-family:Arial,Helvetica,sans-serif; }
+  main { width:100%; max-width:520px; background:#fffdf8; border:1px solid #e3ded2;
+    border-radius:18px; padding:32px; }
+  .eyebrow { font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:#0f766e; font-weight:700; }
+  h1 { font-size:26px; line-height:1.2; margin:14px 0 10px; }
+  p { font-size:15px; line-height:1.6; color:#5d6b67; margin:0 0 14px; }
+  .muted { font-size:13px; color:#7a8783; }
+  form { margin-top:24px; }
+  button { width:100%; border:0; border-radius:999px; background:#0f766e; color:#fff;
+    font-size:15px; font-weight:700; padding:15px 24px; cursor:pointer; }
+  button:focus-visible { outline:3px solid #ea580c; outline-offset:3px; }
+  a { color:#0f766e; font-weight:700; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">TesterLoop</div>
+  <h1 id="title">Activate your TesterLoop account</h1>
+  <p id="message">Press the button below to confirm this email address. The link expires 24 hours after it was sent and works once.</p>
+  <form id="activate" method="post" action="https://omlhddzyitzjbcgrxvbn.supabase.co/functions/v1/activate-account" hidden>
+    <input type="hidden" name="token" id="token" value="">
+    <button type="submit">Activate my account</button>
+  </form>
+  <noscript>
+    <p class="muted">This page needs JavaScript to read your activation link.
+    Enable JavaScript, or open the link again from your email.</p>
+  </noscript>
+  <p class="muted"><a href="https://chamarawickramarathne-spec.github.io/close-test/">TesterLoop website</a></p>
+</main>
+<script>
+  (function () {
+    var token = new URLSearchParams(window.location.search).get("token") || "";
+    token = token.trim();
+    if (/^[0-9a-f]{64}$/i.test(token)) {
+      document.getElementById("token").value = token.toLowerCase();
+      document.getElementById("activate").hidden = false;
+    } else {
+      document.getElementById("title").textContent = "This link is incomplete";
+      document.getElementById("message").textContent =
+        "Open the activation link from your email again, or request a new one from the sign-in screen.";
+    }
+  })();
+</script>
+</body>
+</html>

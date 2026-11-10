@@ -1750,6 +1750,16 @@ Completed:
   and by making the `send-activation` failure log name the script's actual
   answer (Modification 071). No desktop or Android source changed; installers
   stay at `0.18.0` / `1.3.0`.
+- 2026-11-10 second live diagnosis: the email now delivers, but the activation
+  link opened a tab of raw HTML and activation could not complete. The deployed
+  `activate-account` runs the repo code correctly; the Supabase gateway rewrites
+  `Content-Type: text/html` to `text/plain` on GET responses from Edge
+  Functions (documented platform limit; HTML serving is only supported on
+  custom domains). POST responses keep the header, which is why GET and POST
+  probes diverged while sharing one `x-deno-execution-id`. Fixed by moving the
+  confirmation page to `docs/activate.html` on the GitHub Pages site, keeping
+  POST activation on the function, and changing the function GET to a 302
+  redirect to the page so old links keep working (Modification 072).
 
 Pending:
 - Owner: run `sql/migrations/037_account_activation.sql` after `036` in the
@@ -1758,7 +1768,13 @@ Pending:
 - Owner: redeploy the fixed `Code.gs` (Deploy -> Manage deployments -> New
   version, same URL, no new consent) and redeploy the `send-activation` Edge
   Function with `--no-verify-jwt`. Then press `Resend activation email` in the
-  app to confirm delivery.
+  app to confirm delivery. (Owner already redeployed; the email delivers.)
+- Owner: push this commit so Pages publishes `docs/activate.html`, redeploy the
+  `activate-account` Edge Function from the updated `index.ts` with
+  `--no-verify-jwt`, and change the Apps Script property `ACTIVATION_LINK_BASE`
+  to `https://chamarawickramarathne-spec.github.io/close-test/activate.html`
+  (read at request time; no new deployment version required). Then resend and
+  click through to confirm the full round-trip.
 - Owner: keep Supabase `mailer_autoconfirm` on so signup returns a session.
 - Live verification of the activation email round-trip, the activation link,
   the inactive sign-in refusal and the resend flow; no device or live account

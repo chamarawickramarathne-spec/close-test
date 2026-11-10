@@ -5122,3 +5122,86 @@ Date: 2026-11-10
   capped at 300 characters and the script's error messages contain no secrets;
   the token is never logged.
 
+### Modification 072
+
+Date: 2026-11-10
+
+#### Changes
+- Fixed the activation link opening a tab of raw HTML text, which also blocked
+  activation. The confirmation page is now served by the GitHub Pages website
+  instead of the Edge Function.
+- Root cause: the deployed `activate-account` runs the repo code correctly, but
+  Supabase rewrites the `Content-Type` of GET responses from Edge Functions
+  from `text/html` to `text/plain` (documented platform limit: serving HTML is
+  only supported on custom domains). The browser therefore rendered the HTML as
+  plain text, the `Activate my account` button never appeared and the POST step
+  could never run. POST responses keep the function's `text/html` header, which
+  is why GET and POST probes diverged even though both came from the same
+  isolate.
+- Added `docs/activate.html`: the branded confirmation page on the GitHub Pages
+  site, styled like the old function page. One small inline script reads the
+  64-hex token from the query string, validates it, shows the form for a valid
+  token or the incomplete-link message otherwise, and the form posts the token
+  to `https://omlhddzyitzjbcgrxvbn.supabase.co/functions/v1/activate-account`.
+  Its CSP allows `form-action` only for that origin; `X-Frame-Options` framing
+  protection is not available on Pages, so `frame-ancestors` cannot be enforced
+  there.
+- `supabase/functions/activate-account/index.ts` GET is now a `302` redirect to
+  `docs/activate.html` (appending the token when it matches the 64-hex rule),
+  so email links sent before the change keep working. POST activation, token
+  validation, `activate_account` error mapping and all POST result pages are
+  unchanged. POST pages keep the `text/html` header, so the browser renders the
+  activation result normally.
+- The Apps Script does not change code: the email link comes from the
+  `ACTIVATION_LINK_BASE` script property, which must now be
+  `https://chamarawickramarathne-spec.github.io/close-test/activate.html`.
+  `docs/README.md` and the Apps Script README document the new value and the
+  platform limit. The stray text fragment in the Apps Script README line about
+  `SHARED_SECRET` was also removed.
+- The scanner-safety design is unchanged: opening the link (GET) only renders
+  the page; activation happens exclusively on the user's button press (POST),
+  so email scanners still cannot consume tokens.
+
+#### Files / Components
+- `docs/activate.html` (new)
+- `supabase/functions/activate-account/index.ts`
+- `google-apps-script/account-activation/README.md`
+- `docs/README.md`
+- `AGENTS.md`, `AGENTS_PLAN.md`
+
+#### Important Notes
+- Owner steps to finish the fix:
+  1. Push this commit so GitHub Pages publishes `docs/activate.html`.
+  2. Redeploy the `activate-account` Edge Function from the updated `index.ts`
+     with `--no-verify-jwt` (Dashboard: replace the function body, redeploy).
+  3. In the Apps Script project, change the script property
+     `ACTIVATION_LINK_BASE` to
+     `https://chamarawickramarathne-spec.github.io/close-test/activate.html`.
+     Script properties are read at request time, so no new deployment version is
+     required; `testSend` can confirm the new link.
+  4. Send a fresh activation email (Resend in the app) and click through: the
+     link should open the styled page, the button should post, and the result
+     page should confirm activation.
+- Old email links (pointing at the function) keep working after the function
+  redeploy because GET now redirects to the page with the token preserved.
+- `medial_support.txt` was not changed; no marketing claim touches the
+  activation page mechanics.
+- Verification: curl probes of the deployed function reproduced the fault
+  exactly (GET 200 `text/plain` with platform-default CSP; POST 400
+  `text/html; charset=utf-8` with the repo headers; both shared one
+  `x-deno-execution-id`); the Supabase limits page documents the rewrite
+  behaviour; the Pages site returns `text/html; charset=utf-8` and is live. All
+  changed files are ASCII-only with no BOM, and the new page's tags balance.
+- Not verified live: the redeployed redirect, the Pages page rendering in a
+  browser and the full activate round-trip, because the Edge Function redeploy
+  and the property change are owner actions. No client source changed, so the
+  installers stay at `0.18.0` / mobile `1.3.0`.
+- Security: no secrets or endpoints were added. The page never logs or
+  transmits the token anywhere except the existing activation POST, which the
+  previous design already used. The token in the URL is unchanged from the
+  email-link design; it is a single-use, 24-hour, SHA-256-hashed value. The
+  page's CSP restricts form submissions to the Supabase function origin and
+  blocks all other resource loads. `docs/` remains free of analytics, external
+  scripts and third-party assets.
+
+

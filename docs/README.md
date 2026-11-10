@@ -2,7 +2,9 @@
 
 Static site used as the TesterLoop product website and as the policy pages that a
 merchant-of-record application asks for (Terms, Privacy, Refund). No build step,
-no JavaScript, no cookies, no external fonts or CDNs.
+no cookies, no external fonts or CDNs. Every page is plain HTML except
+`activate.html`, which uses one small inline script to read the activation token
+from the link.
 
 ## Files
 
@@ -12,10 +14,18 @@ no JavaScript, no cookies, no external fonts or CDNs.
 | `terms.html` | Terms of Service |
 | `privacy.html` | Privacy Policy |
 | `refunds.html` | Refund Policy |
+| `activate.html` | Account activation confirmation page; posts the token to the `activate-account` Edge Function |
 | `site.css` | The only stylesheet |
 | `lemonsqueezy-activation.md` | Seller activation answers plus the full go-live checklist |
 | `assets/` | Logo and icon copies (GitHub Pages cannot serve `../media`) |
 | `.nojekyll` | Stops GitHub Pages from running Jekyll |
+
+`activate.html` is the only page with JavaScript. It exists because Supabase
+rewrites the HTML of GET responses from Edge Functions to `text/plain`, so the
+activation confirmation page cannot be served by the function itself. Keep its
+form action pointed at
+`https://omlhddzyitzjbcgrxvbn.supabase.co/functions/v1/activate-account`, and
+keep the token handling in step with the function's 64-hex rule.
 
 `lemonsqueezy-activation.md` is internal. It is not linked from the site.
 

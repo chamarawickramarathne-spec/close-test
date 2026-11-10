@@ -4,6 +4,8 @@ const TOKEN = /^[0-9a-f]{64}$/;
 
 const SITE = "https://chamarawickramarathne-spec.github.io/close-test/";
 
+const PAGE = "https://chamarawickramarathne-spec.github.io/close-test/activate.html";
+
 const HEADERS = {
   "Content-Type": "text/html; charset=utf-8",
   "Cache-Control": "no-store",
@@ -81,15 +83,15 @@ Deno.serve(async (req) => {
   let token = (url.searchParams.get("token") ?? "").trim().toLowerCase();
 
   if (req.method === "GET") {
-    if (!TOKEN.test(token)) {
-      return page(400, "This link is incomplete", "Open the activation link from your email again, or request a new one from the sign-in screen.");
-    }
-    return page(
-      200,
-      "Activate your TesterLoop account",
-      "Press the button below to confirm this email address. The link expires 24 hours after it was sent and works once.",
-      token,
-    );
+    const target = PAGE + (TOKEN.test(token) ? "?token=" + encodeURIComponent(token) : "");
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: target,
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer",
+      },
+    });
   }
 
   if (req.method !== "POST") {

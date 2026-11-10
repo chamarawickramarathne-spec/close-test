@@ -1737,19 +1737,31 @@ Completed:
   12,720,385 bytes, copied to `build/android`; lint 0 errors.
 - All four published executables start, stay responsive and were stopped after
   the check.
+- Committed `20b0af3` "Add account activation emails (0.18.0)" (33 files) and
+  published GitHub release `desktop-v0.18.0` with all four installers plus
+  `desktop-version.json`; the five stable `releases/latest/download/...` URLs
+  return HTTP 200 and the remote manifest matches the local file.
+- 2026-11-10 live diagnosis: owner deployed everything, but every signup failed
+  with 502 "The activation email could not be sent." Probes confirmed both Edge
+  Functions deployed, secrets present, Apps Script healthy and reachable. Root
+  cause found in our own script: `Code.gs` called `GmailApp.sendEmail` while the
+  manifest declares only `script.send_mail` (the `MailApp` scope), so the mail
+  call threw at runtime. Fixed by switching both sends to `MailApp.sendEmail`
+  and by making the `send-activation` failure log name the script's actual
+  answer (Modification 071). No desktop or Android source changed; installers
+  stay at `0.18.0` / `1.3.0`.
 
 Pending:
 - Owner: run `sql/migrations/037_account_activation.sql` after `036` in the
-  Supabase SQL editor as `postgres`.
-- Owner: deploy the `account-activation` Apps Script web app with its
-  `SHARED_SECRET` and `ACTIVATION_LINK_BASE` properties, set the
-  `ACTIVATION_SCRIPT_URL` / `ACTIVATION_SCRIPT_SECRET` Edge secrets, and deploy
-  `send-activation` and `activate-account` with `--no-verify-jwt`.
+  Supabase SQL editor as `postgres` (owner reports signup reaches the token
+  step, so `037` appears applied; confirm once).
+- Owner: redeploy the fixed `Code.gs` (Deploy -> Manage deployments -> New
+  version, same URL, no new consent) and redeploy the `send-activation` Edge
+  Function with `--no-verify-jwt`. Then press `Resend activation email` in the
+  app to confirm delivery.
 - Owner: keep Supabase `mailer_autoconfirm` on so signup returns a session.
 - Live verification of the activation email round-trip, the activation link,
   the inactive sign-in refusal and the resend flow; no device or live account
   was used this round.
-- Publish the desktop `desktop-v0.18.0` GitHub release with the four installers
-  and `desktop-version.json`.
 - Still owed: migrations `032`-`037` (whichever are unapplied) plus the QA purge
   in `sql/maintenance/purge_test_accounts.sql`.

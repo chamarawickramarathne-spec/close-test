@@ -5074,3 +5074,51 @@ Date: 2026-11-10
   anonymous response prevent enumeration. Inactive accounts cannot reach any
   dashboard RPC because every role helper now checks `status`.
 
+### Modification 071
+
+Date: 2026-11-10
+
+#### Changes
+- Fixed the activation email failing with `502` and
+  "The activation email could not be sent. Try again in a minute." on every
+  signup. The account was created and the token was issued; only the email send
+  failed.
+- Root cause: `Code.gs` called `GmailApp.sendEmail`, but the shipped
+  `appsscript.json` manifest declares only the `script.send_mail` scope, which
+  authorizes `MailApp`, not `GmailApp`. With an explicit scope list, Apps Script
+  refuses `GmailApp` at runtime, the script's catch block returned an error
+  JSON, and the Edge Function surfaced it as the generic 502. The health-check
+  `doGet` passed because it never touches the mail service.
+- `Code.gs` now uses `MailApp.sendEmail` in both `doPost` and `testSend`.
+  `MailApp` has the identical signature and options, sends from the same
+  account, and matches the declared scope, so no re-authorization is required.
+- Improved `send-activation` Edge Function diagnostics: the failure log now
+  names the script's actual answer (`Unauthorized.`, quota text, or a non-JSON
+  HTML response with a 300-character snippet) instead of one generic message.
+  End-user messages are unchanged; only server-side logs are more specific.
+- README setup step 5 now says to authorize the send-email permission and warns
+  not to call `GmailApp` from this script.
+
+#### Files / Components
+- `google-apps-script/account-activation/Code.gs`
+- `google-apps-script/account-activation/README.md`
+- `supabase/functions/send-activation/index.ts`
+- `AGENTS.md`
+
+#### Important Notes
+- Owner must redeploy: replace `Code.gs` in the Apps Script editor, then
+  Deploy -> Manage deployments -> New version -> Deploy (same URL, no new
+  consent), and redeploy the `send-activation` Edge Function from the updated
+  `index.ts` with `--no-verify-jwt` as before. Then press
+  `Resend activation email` in the app.
+- No desktop or Android application source changed, so no rebuild and no
+  version bump; the installers stay at `0.18.0` / mobile `1.3.0`.
+- Diagnostic evidence: the anonymous `send-activation` probe returned
+  `{"ok":true}` (secrets present, function deployed), the `activate-account` GET
+  rendered the confirmation page, and the Apps Script `doGet` health check
+  returned `{"status":"ok",...}`, so deployment, access level and the URL were
+  all correct. Only the mail call failed, which pointed at the scope mismatch.
+- Security: no secrets or endpoints were added or changed. The log snippet is
+  capped at 300 characters and the script's error messages contain no secrets;
+  the token is never logged.
+

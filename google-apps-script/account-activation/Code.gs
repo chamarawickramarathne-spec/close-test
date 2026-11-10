@@ -48,7 +48,7 @@ function doPost(e) {
 
     const link = linkBase + '?token=' + encodeURIComponent(token);
 
-    GmailApp.sendEmail(email, 'Activate your TesterLoop account', plainBody_(link), {
+    MailApp.sendEmail(email, 'Activate your TesterLoop account', plainBody_(link), {
       htmlBody: htmlBody_(email, link),
       name: senderName || 'TesterLoop',
     });
@@ -81,7 +81,7 @@ function testSend() {
   }
 
   const token = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-  GmailApp.sendEmail(email, 'Activate your TesterLoop account', plainBody_(base + '?token=' + token), {
+  MailApp.sendEmail(email, 'Activate your TesterLoop account', plainBody_(base + '?token=' + token), {
     htmlBody: htmlBody_(email, base + '?token=' + token),
     name: (props.getProperty(SENDER_NAME_PROPERTY) || 'TesterLoop').trim(),
   });

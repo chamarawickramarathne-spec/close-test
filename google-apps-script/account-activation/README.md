@@ -10,13 +10,15 @@ Supabase Edge Function.
 2. Replace `Code.gs` with the file in this folder and `appsscript.json` with the
    manifest here.
 3. Open **Project Settings > Script Properties** and add:
-   - `SHARED_SECRET` - a long random value, also used as
+   - `SHARED_SECRET` - a long random value, also used as lqllodzijzpqgebv
      `ACTIVATION_SCRIPT_SECRET` in Supabase.
    - `ACTIVATION_LINK_BASE` -
      `https://omlhddzyitzjbcgrxvbn.supabase.co/functions/v1/activate-account`.
    - `SENDER_NAME` - optional sender name, for example `TesterLoop`.
 4. Deploy as **Web app**, execute as **Me**, access **Anyone**.
-5. Authorise the Gmail send scope when Google asks.
+5. Authorise the **send email as you** permission when Google asks. The code
+   uses `MailApp`, which matches the `script.send_mail` scope in the manifest;
+   do not call `GmailApp` from this script.
 6. Copy the web app URL into the Supabase Edge secret
    `ACTIVATION_SCRIPT_URL`.
 7. Deploy the `send-activation` and `activate-account` Edge Functions with

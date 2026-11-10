@@ -65,12 +65,29 @@ Deno.serve(async (req) => {
         throw new Error("The activation email service is unavailable.");
       }
 
+      const contentType = response.headers.get("content-type") ?? "";
+      const text = await response.text().catch(() => "");
+      const snippet = text.slice(0, 300);
+
       if (!response.ok) {
+        console.error("activation script http error:", response.status, contentType, snippet);
         throw new Error("The activation email service rejected the request.");
       }
 
-      const result = await response.json().catch(() => null);
-      if (result?.status !== "ok") {
+      let result: { status?: string; message?: string } | null = null;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = null;
+      }
+
+      if (!result) {
+        console.error("activation script returned non-JSON:", contentType, snippet);
+        throw new Error("The activation email could not be sent.");
+      }
+
+      if (result.status !== "ok") {
+        console.error("activation script error:", result.message ?? "unknown error");
         throw new Error("The activation email could not be sent.");
       }
     };
